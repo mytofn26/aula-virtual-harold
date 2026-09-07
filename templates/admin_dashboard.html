@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel del negocio — Aula Virtual</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="wrap">
+    <div class="top-nav">
+      <span class="brand-name">Harold Parco</span>
+      <a class="logout-link" href="/admin/logout">Cerrar sesión admin</a>
+    </div>
+
+    <p class="eyebrow">PANEL DEL NEGOCIO</p>
+    <h1 style="margin:8px 0 4px;">Curso: {{ course_title }}</h1>
+    <p style="color:var(--ink-soft);margin-bottom:10px;">
+      Cuando alguien te pague (Yape, transferencia, WhatsApp), créale el acceso aquí y mándale el código.
+    </p>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="post" class="add-form">
+      <div>
+        <label>Nombre de la alumna</label>
+        <input type="text" name="name" required>
+      </div>
+      <div>
+        <label>Correo</label>
+        <input type="email" name="email" required>
+      </div>
+      <button class="btn" type="submit">Crear acceso</button>
+    </form>
+
+    <table>
+      <thead>
+        <tr><th>Nombre</th><th>Correo</th><th>Código</th><th>Inscrita</th><th>Último ingreso</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for s in students %}
+        <tr>
+          <td>{{ s.name }}</td>
+          <td>{{ s.email }}</td>
+          <td><span class="code-pill">{{ s.access_code }}</span></td>
+          <td>{{ s.enrolled_at[:10] }}</td>
+          <td>{{ s.last_login[:16] if s.last_login else '—' }}</td>
+          <td>
+            <form method="post" action="/admin/remove/{{ s.id }}" onsubmit="return confirm('¿Quitar el acceso de {{ s.name }}?');">
+              <button class="remove-btn" type="submit">Quitar acceso</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" style="color:var(--ink-soft);">Todavía no hay alumnas inscritas.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

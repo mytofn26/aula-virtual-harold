@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap');
+
+:root{
+  --bg:#FAFAF7; --surface:#FFFFFF; --ink:#0D0D0D; --ink-soft:#6B6558;
+  --wine:#C9A24B; --wine-dark:#A6842E; --line:#E5DFD5;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;line-height:1.6;}
+a{color:inherit;}
+.wrap{max-width:960px;margin:0 auto;padding:0 24px;}
+
+.center-shell{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;background:var(--ink);}
+.card{background:var(--surface);border-radius:18px;padding:40px 36px;max-width:400px;width:100%;box-shadow:0 30px 60px rgba(0,0,0,.4);}
+.brand-name{display:block;text-align:center;font-family:'Great Vibes',cursive;font-size:38px;color:var(--wine);margin-bottom:6px;}
+.brand-sub{display:block;text-align:center;font-family:'Bebas Neue',sans-serif;letter-spacing:.08em;font-size:13px;color:var(--ink-soft);margin-bottom:28px;}
+
+label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;margin-top:14px;}
+input[type=text],input[type=email],input[type=password]{
+  width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;font-size:14.5px;font-family:'Inter',sans-serif;
+}
+.btn{display:inline-flex;align-items:center;justify-content:center;width:100%;margin-top:22px;padding:13px;border:none;border-radius:100px;background:var(--wine);color:#0D0D0D;font-weight:600;font-size:15px;cursor:pointer;text-decoration:none;}
+.btn:hover{background:var(--wine-dark);}
+.btn-outline{background:transparent;border:1px solid var(--line);color:var(--ink);}
+
+.flash{background:#FBEAEA;color:#8a2e2e;padding:10px 14px;border-radius:8px;font-size:13px;margin-top:14px;}
+
+.top-nav{display:flex;justify-content:space-between;align-items:center;padding:20px 0;border-bottom:1px solid var(--line);margin-bottom:34px;}
+.top-nav .brand-name{margin:0;font-size:26px;}
+.logout-link{font-size:13px;color:var(--ink-soft);text-decoration:none;}
+
+.course-header{margin-bottom:30px;}
+.eyebrow{font-family:'Bebas Neue',sans-serif;letter-spacing:.08em;font-size:14px;color:var(--wine);}
+.lesson{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px;}
+.lesson h3{margin:0 0 12px;font-size:16px;}
+.lesson iframe{width:100%;aspect-ratio:16/9;border:none;border-radius:10px;}
+
+table{width:100%;border-collapse:collapse;margin-top:20px;}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-size:13.5px;}
+th{font-family:'Bebas Neue',sans-serif;letter-spacing:.04em;color:var(--ink-soft);font-weight:400;}
+.code-pill{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-family:monospace;}
+.remove-btn{background:none;border:none;color:#a6342e;font-size:12.5px;cursor:pointer;text-decoration:underline;}
+.add-form{display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin-bottom:10px;}
+.add-form > div{flex:1;min-width:180px;}
+.add-form .btn{width:auto;margin-top:0;padding:12px 22px;}

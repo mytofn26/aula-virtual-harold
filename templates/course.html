@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ title }} — Aula Virtual</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="wrap">
+    <div class="top-nav">
+      <span class="brand-name">Harold Parco</span>
+      <a class="logout-link" href="/logout">Cerrar sesión ({{ student_name }})</a>
+    </div>
+
+    <div class="course-header">
+      <p class="eyebrow">TU CURSO</p>
+      <h1 style="margin:8px 0;">{{ title }}</h1>
+      <p style="color:var(--ink-soft);max-width:600px;">{{ desc }}</p>
+    </div>
+
+    {% for lesson in lessons %}
+    <div class="lesson">
+      <h3>{{ loop.index }}. {{ lesson.title }}</h3>
+      <iframe src="{{ lesson.video_url }}" allowfullscreen></iframe>
+    </div>
+    {% endfor %}
+
+    <p style="text-align:center;color:var(--ink-soft);font-size:12.5px;margin:40px 0;">
+      ¿Dudas sobre alguna clase? Escríbenos por WhatsApp.
+    </p>
+  </div>
+</body>
+</html>
