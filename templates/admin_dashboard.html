@@ -25,6 +25,31 @@
       {% endif %}
     {% endwith %}
 
+    <h2 style="font-size:18px;margin-top:34px;">Solicitudes de pago pendientes ({{ pending|length }})</h2>
+    <p style="color:var(--ink-soft);font-size:13px;margin-bottom:14px;">Llegan solas desde la página <code>/inscribirme</code>. Revisa la captura antes de aprobar.</p>
+    {% for p in pending %}
+    <div class="lesson" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+      {% if p.proof_file %}
+        <a href="/static/uploads/{{ p.proof_file }}" target="_blank">
+          <img src="/static/uploads/{{ p.proof_file }}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--line);" onerror="this.outerHTML='<span style=color:var(--ink-soft);font-size:12px;>Ver archivo</span>'">
+        </a>
+      {% endif %}
+      <div style="flex:1;min-width:180px;">
+        <strong>{{ p.name }}</strong><br>
+        <span style="font-size:13px;color:var(--ink-soft);">{{ p.email }} · WhatsApp: {{ p.whatsapp }}</span>
+      </div>
+      <form method="post" action="/admin/approve/{{ p.id }}">
+        <button class="btn" style="width:auto;padding:10px 18px;margin:0;" type="submit">Aprobar y generar código</button>
+      </form>
+      <form method="post" action="/admin/reject/{{ p.id }}">
+        <button class="remove-btn" type="submit">Rechazar</button>
+      </form>
+    </div>
+    {% else %}
+    <p style="color:var(--ink-soft);font-size:13.5px;">No hay solicitudes pendientes por ahora.</p>
+    {% endfor %}
+
+    <h2 style="font-size:18px;margin-top:40px;">Crear acceso manual</h2>
     <form method="post" class="add-form">
       <div>
         <label>Nombre de la alumna</label>

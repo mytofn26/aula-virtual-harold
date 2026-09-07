@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ title }} — Harold Parco</title>
+<link rel="stylesheet" href="/static/style.css">
+<style>
+  .sales-shell{max-width:640px;margin:0 auto;padding:50px 20px;background:var(--bg);}
+  .sales-hero{text-align:center;margin-bottom:36px;}
+  .sales-photo{width:110px;height:110px;border-radius:50%;object-fit:cover;margin:0 auto 16px;border:3px solid #fff;box-shadow:0 10px 26px rgba(0,0,0,.15);}
+  .sales-hero h1{font-size:28px;margin:0 0 6px;}
+  .sales-hero p.sub{color:var(--ink-soft);font-size:15px;}
+  .trust-row{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:22px 0 40px;}
+  .trust-pill{background:#fff;border:1px solid var(--line);border-radius:100px;padding:8px 16px;font-size:12.5px;font-weight:500;}
+  .section-title{font-family:'Bebas Neue',sans-serif;letter-spacing:.06em;color:var(--wine);font-size:15px;margin-bottom:14px;}
+  .curriculum{background:#fff;border:1px solid var(--line);border-radius:16px;padding:6px 22px;margin-bottom:40px;}
+  .curriculum-item{display:flex;gap:14px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line);}
+  .curriculum-item:last-child{border-bottom:none;}
+  .curriculum-num{flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--wine);color:#0D0D0D;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:14px;}
+  .quote-box{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px;margin-bottom:44px;}
+  .quote-box p.q{font-size:15.5px;font-style:italic;margin-bottom:12px;}
+  .quote-box p.a{font-size:12.5px;color:var(--ink-soft);}
+  .stars{color:var(--wine);margin-bottom:10px;}
+  .proof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:40px;}
+  .proof-grid img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:12px;border:1px solid var(--line);}
+  .checkout-card{background:#0D0D0D;border-radius:20px;padding:36px 30px;color:#fff;}
+  .checkout-card .section-title{color:var(--wine);}
+  .checkout-card h2{color:#fff;font-size:20px;margin:0 0 4px;}
+  .checkout-price{font-family:'Bebas Neue',sans-serif;font-size:34px;color:var(--wine);margin-bottom:20px;}
+  .qr-box{background:rgba(255,255,255,.06);border:1px dashed rgba(201,162,75,.4);border-radius:14px;padding:18px;text-align:center;margin-bottom:24px;}
+  .qr-box img{max-width:170px;width:100%;border-radius:8px;}
+  .checkout-card label{color:rgba(255,255,255,.85);}
+  .checkout-card input[type=text],.checkout-card input[type=email],.checkout-card input[type=file]{background:#fff;}
+</style>
+</head>
+<body>
+  <div class="sales-shell">
+
+    <div class="sales-hero">
+      <img class="sales-photo" src="/static/harold-photo.jpg" alt="Harold Parco">
+      <span class="brand-name" style="font-size:30px;">Harold Parco</span>
+      <h1>{{ title }}</h1>
+      <p class="sub">{{ desc }}</p>
+    </div>
+
+    <div class="trust-row">
+      {% for point in trust_points %}
+      <span class="trust-pill">{{ point }}</span>
+      {% endfor %}
+    </div>
+
+    <p class="section-title">QUÉ VAS A APRENDER</p>
+    <div class="curriculum">
+      {% for lesson in lessons %}
+      <div class="curriculum-item">
+        <span class="curriculum-num">{{ loop.index }}</span>
+        <span>{{ lesson.title }}</span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <p class="section-title">RESULTADOS REALES</p>
+    <div class="proof-grid">
+      <img src="/static/proof-1.jpg" alt="Trabajo real — sistema dual">
+      <img src="/static/proof-2.jpg" alt="Trabajo real — acrílico">
+      <img src="/static/proof-3.jpg" alt="Trabajo real — decoración">
+    </div>
+
+    <p class="section-title">LO QUE DICEN DE HAROLD</p>
+    <div class="quote-box">
+      <div class="stars">★★★★★</div>
+      <p class="q">"{{ testimonial.quote }}"</p>
+      <p class="a">{{ testimonial.author }}</p>
+    </div>
+
+    <div class="checkout-card">
+      <p class="section-title">RESERVA TU CUPO</p>
+      <h2>{{ title }}</h2>
+      <p class="checkout-price">{{ price }}</p>
+
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          {% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <div class="qr-box">
+        <img src="/static/{{ qr_image }}" alt="QR de pago" onerror="this.style.display='none';document.getElementById('noqr').style.display='block';">
+        <p id="noqr" style="display:none;color:rgba(255,255,255,.6);font-size:13px;">Aquí va tu QR de Yape/Plin</p>
+        <p style="font-size:12.5px;color:rgba(255,255,255,.6);margin-top:10px;">1. Escanea y paga el monto exacto · 2. Sube tu captura abajo</p>
+      </div>
+
+      <form method="post" enctype="multipart/form-data">
+        <label>Tu nombre completo</label>
+        <input type="text" name="name" required>
+        <label>Tu correo</label>
+        <input type="email" name="email" required>
+        <label>Tu WhatsApp</label>
+        <input type="text" name="whatsapp" required placeholder="987654321">
+        <label>Captura del pago</label>
+        <input type="file" name="proof" accept="image/*,.pdf" required>
+        <button class="btn" type="submit">Enviar solicitud y reservar mi cupo</button>
+      </form>
+      <p style="text-align:center;font-size:12px;color:rgba(255,255,255,.5);margin-top:16px;">
+        Revisamos tu pago y te mandamos tu código de acceso por WhatsApp en las próximas horas.
+      </p>
+    </div>
+
+  </div>
+</body>
+</html>
