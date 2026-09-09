@@ -5,7 +5,8 @@ import os
 from datetime import datetime
 from functools import wraps
 from werkzeug.utils import secure_filename
-from flask import Flask, render_template, request, redirect, session, url_for, flash
+from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify
+import culqi
 
 app = Flask(__name__)
 app.secret_key = "cambia-esta-clave-en-produccion-por-una-larga-y-aleatoria"
@@ -16,19 +17,18 @@ UPLOAD_FOLDER = os.path.join("static", "uploads")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 ALLOWED_EXT = {"png", "jpg", "jpeg", "webp", "pdf"}
 
-# ==== CONTENIDO DEL CURSO (edita esto directamente) ====
-COURSE_TITLE = "Curso 5 días: Sistema Dual"
-COURSE_DESC = "Polygel y builder gel: cánulas de moldes duales, dual sandwich y extensiones híbridas. Desde cero, sin experiencia previa."
-COURSE_PRICE = "S/680"
+# ==== CULQI — pega aquí tus llaves cuando las tengas (culqi.com > Llaves de integración) ====
+CULQI_PUBLIC_KEY = "pk_test_TU_LLAVE_PUBLICA_AQUI"
+CULQI_SECRET_KEY = "sk_test_TU_LLAVE_SECRETA_AQUI"
+CULQI_PLAN_ID = "pln_test_TU_PLAN_AQUI"  # crea el plan una vez desde tu Panel de Culqi (CulqiPanel > Suscripciones > Planes)
+culqi.private_key = CULQI_SECRET_KEY
+# ============================================================================================
+
+# ==== CONTENIDO Y MARCA (edita esto directamente) ====
+COURSE_TITLE = "Academia Harold Parco — Membresía mensual"
+COURSE_DESC = "Nuevas clases de técnicas de uñas cada mes: polygel, sistema dual, decoración y más. Mientras estés suscrita, tienes acceso a todo el contenido."
+COURSE_PRICE = "S/50 / mes"
 PAYMENT_WHATSAPP = "51936268510"
-QR_IMAGE = "uploads/qr-pago.png"  # reemplaza este archivo por tu QR real de Yape/Plin
-LESSONS = [
-    {"title": "Clase 1 — Introducción y materiales", "video_url": "https://www.youtube.com/embed/dQw4w9WgXcQ"},
-    {"title": "Clase 2 — Preparación de la uña natural", "video_url": "https://www.youtube.com/embed/dQw4w9WgXcQ"},
-    {"title": "Clase 3 — Moldes duales, primera aplicación", "video_url": "https://www.youtube.com/embed/dQw4w9WgXcQ"},
-    {"title": "Clase 4 — Dual sandwich y extensiones híbridas", "video_url": "https://www.youtube.com/embed/dQw4w9WgXcQ"},
-    {"title": "Clase 5 — Acabado, limado y sellado final", "video_url": "https://www.youtube.com/embed/dQw4w9WgXcQ"},
-]
 TRUST_POINTS = [
     "+600 alumnas graduadas",
     "Embajador de Cherimoya Perú",
@@ -38,7 +38,7 @@ TESTIMONIAL = {
     "quote": "Excelente atención y servicio. El ambiente es súper relajante y el personal muy profesional. Totalmente recomendado.",
     "author": "Angeles Principe Noel · Reseña en Google",
 }
-# =========================================================
+# ======================================================
 
 
 def get_db():
@@ -50,24 +50,25 @@ def get_db():
 def init_db():
     conn = get_db()
     conn.execute("""
-        CREATE TABLE IF NOT EXISTS students (
+        CREATE TABLE IF NOT EXISTS subscribers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             email TEXT NOT NULL UNIQUE,
             access_code TEXT NOT NULL UNIQUE,
-            enrolled_at TEXT NOT NULL,
+            culqi_customer_id TEXT,
+            culqi_card_id TEXT,
+            culqi_subscription_id TEXT,
+            status TEXT NOT NULL DEFAULT 'active',
+            created_at TEXT NOT NULL,
             last_login TEXT
         )
     """)
     conn.execute("""
-        CREATE TABLE IF NOT EXISTS pending_requests (
+        CREATE TABLE IF NOT EXISTS lessons (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL,
-            whatsapp TEXT NOT NULL,
-            proof_file TEXT,
-            requested_at TEXT NOT NULL,
-            status TEXT NOT NULL DEFAULT 'pendiente'
+            title TEXT NOT NULL,
+            video_url TEXT NOT NULL,
+            added_at TEXT NOT NULL
         )
     """)
     conn.commit()
@@ -98,40 +99,100 @@ def student_required(f):
     return wrapper
 
 
-@app.route("/inscribirme", methods=["GET", "POST"])
-def inscribirme():
-    if request.method == "POST":
-        name = request.form.get("name", "").strip()
-        email = request.form.get("email", "").strip().lower()
-        whatsapp = request.form.get("whatsapp", "").strip()
-        file = request.files.get("proof")
+# ==================== PÁGINA DE SUSCRIPCIÓN (venta) ====================
 
-        if not (name and email and whatsapp):
-            flash("Completa todos los campos.")
-            return render_template("inscribirme.html", title=COURSE_TITLE, desc=COURSE_DESC, price=COURSE_PRICE,
-                                    qr_image=QR_IMAGE, whatsapp=PAYMENT_WHATSAPP, lessons=LESSONS,
-                                    trust_points=TRUST_POINTS, testimonial=TESTIMONIAL)
+@app.route("/suscribirme")
+def suscribirme():
+    conn = get_db()
+    lessons = conn.execute("SELECT * FROM lessons ORDER BY added_at DESC LIMIT 5").fetchall()
+    conn.close()
+    return render_template("suscribirme.html", title=COURSE_TITLE, desc=COURSE_DESC, price=COURSE_PRICE,
+                            lessons=lessons, trust_points=TRUST_POINTS, testimonial=TESTIMONIAL,
+                            culqi_public_key=CULQI_PUBLIC_KEY)
 
-        proof_filename = None
-        if file and file.filename:
-            ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
-            if ext in ALLOWED_EXT:
-                proof_filename = secure_filename(f"{secrets.token_hex(6)}_{file.filename}")
-                file.save(os.path.join(app.config["UPLOAD_FOLDER"], proof_filename))
 
+@app.route("/suscribirme/procesar", methods=["POST"])
+def suscribirme_procesar():
+    """Recibe el token de CulqiJS (la tarjeta ya la manejó Culqi, nunca pasa por aquí),
+    y crea Cliente -> Tarjeta -> Suscripción en Culqi."""
+    data = request.get_json()
+    token_id = data.get("token_id")
+    name = data.get("name", "").strip()
+    email = data.get("email", "").strip().lower()
+
+    if not (token_id and name and email):
+        return jsonify({"ok": False, "error": "Faltan datos."}), 400
+
+    try:
+        first_name, *rest = name.split(" ", 1)
+        last_name = rest[0] if rest else "-"
+
+        customer = culqi.Customer.create({
+            "first_name": first_name,
+            "last_name": last_name,
+            "email": email,
+            "address": "-",
+            "address_city": "-",
+            "country_code": "PE",
+            "phone_number": "999999999",
+        })
+
+        card = culqi.Card.create({
+            "customer_id": customer["id"],
+            "token_id": token_id,
+        })
+
+        subscription = culqi.Subscription.create({
+            "card_id": card["id"],
+            "plan_id": CULQI_PLAN_ID,
+            "tyc": True,
+        })
+
+        code = generate_code()
         conn = get_db()
         conn.execute(
-            "INSERT INTO pending_requests (name, email, whatsapp, proof_file, requested_at, status) VALUES (?, ?, ?, ?, ?, 'pendiente')",
-            (name, email, whatsapp, proof_filename, datetime.now().isoformat())
+            """INSERT INTO subscribers
+               (name, email, access_code, culqi_customer_id, culqi_card_id, culqi_subscription_id, status, created_at)
+               VALUES (?, ?, ?, ?, ?, ?, 'active', ?)""",
+            (name, email, code, customer["id"], card["id"], subscription["id"], datetime.now().isoformat())
         )
         conn.commit()
         conn.close()
-        return render_template("gracias.html", whatsapp=PAYMENT_WHATSAPP)
 
-    return render_template("inscribirme.html", title=COURSE_TITLE, desc=COURSE_DESC, price=COURSE_PRICE,
-                            qr_image=QR_IMAGE, whatsapp=PAYMENT_WHATSAPP, lessons=LESSONS,
-                            trust_points=TRUST_POINTS, testimonial=TESTIMONIAL)
+        return jsonify({"ok": True, "code": code})
 
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+
+
+@app.route("/webhook/culqi", methods=["POST"])
+def webhook_culqi():
+    """Culqi nos avisa aquí cuando algo cambia en una suscripción (cobro exitoso, fallido, cancelada)."""
+    event = request.get_json(silent=True) or {}
+    event_type = event.get("type", "")
+    data = event.get("data", {})
+    subscription_id = data.get("id") or data.get("subscription_id")
+
+    if not subscription_id:
+        return jsonify({"ok": True})
+
+    conn = get_db()
+    if "cancel" in event_type or "failed" in event_type:
+        conn.execute(
+            "UPDATE subscribers SET status = 'inactivo' WHERE culqi_subscription_id = ?",
+            (subscription_id,)
+        )
+    elif "charge" in event_type or "succeeded" in event_type:
+        conn.execute(
+            "UPDATE subscribers SET status = 'active' WHERE culqi_subscription_id = ?",
+            (subscription_id,)
+        )
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True})
+
+
+# ==================== LOGIN Y CURSO ====================
 
 @app.route("/", methods=["GET", "POST"])
 def login():
@@ -139,33 +200,38 @@ def login():
         email = request.form.get("email", "").strip().lower()
         code = request.form.get("code", "").strip().upper()
         conn = get_db()
-        student = conn.execute(
-            "SELECT * FROM students WHERE email = ? AND access_code = ?",
+        sub = conn.execute(
+            "SELECT * FROM subscribers WHERE email = ? AND access_code = ?",
             (email, code)
         ).fetchone()
-        if student:
-            conn.execute(
-                "UPDATE students SET last_login = ? WHERE id = ?",
-                (datetime.now().isoformat(), student["id"])
-            )
+        if sub and sub["status"] == "active":
+            conn.execute("UPDATE subscribers SET last_login = ? WHERE id = ?",
+                         (datetime.now().isoformat(), sub["id"]))
             conn.commit()
             conn.close()
             session["student_email"] = email
-            session["student_name"] = student["name"]
+            session["student_name"] = sub["name"]
             return redirect(url_for("curso"))
-        conn.close()
-        flash("Correo o código incorrecto. Verifica con quien te lo entregó.")
+        elif sub and sub["status"] != "active":
+            conn.close()
+            flash("Tu suscripción no está activa (pago pendiente o cancelada). Escríbenos por WhatsApp.")
+        else:
+            conn.close()
+            flash("Correo o código incorrecto. Verifica con quien te lo entregó.")
     return render_template("login.html")
 
 
 @app.route("/curso")
 @student_required
 def curso():
+    conn = get_db()
+    lessons = conn.execute("SELECT * FROM lessons ORDER BY added_at DESC").fetchall()
+    conn.close()
     return render_template(
         "course.html",
         title=COURSE_TITLE,
         desc=COURSE_DESC,
-        lessons=LESSONS,
+        lessons=lessons,
         student_name=session.get("student_name"),
     )
 
@@ -175,6 +241,8 @@ def logout():
     session.clear()
     return redirect(url_for("login"))
 
+
+# ==================== ADMIN ====================
 
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
@@ -192,62 +260,54 @@ def admin_login():
 def admin_dashboard():
     conn = get_db()
     if request.method == "POST":
-        name = request.form.get("name", "").strip()
-        email = request.form.get("email", "").strip().lower()
-        if name and email:
-            code = generate_code()
-            try:
+        form_type = request.form.get("form_type")
+        if form_type == "lesson":
+            title = request.form.get("lesson_title", "").strip()
+            video_url = request.form.get("lesson_video", "").strip()
+            if title and video_url:
                 conn.execute(
-                    "INSERT INTO students (name, email, access_code, enrolled_at) VALUES (?, ?, ?, ?)",
-                    (name, email, code, datetime.now().isoformat())
+                    "INSERT INTO lessons (title, video_url, added_at) VALUES (?, ?, ?)",
+                    (title, video_url, datetime.now().isoformat())
                 )
                 conn.commit()
-                flash(f"Acceso creado para {name} ({email}) — código: {code}")
-            except sqlite3.IntegrityError:
-                flash("Ese correo ya tiene una cuenta registrada.")
-    students = conn.execute("SELECT * FROM students ORDER BY enrolled_at DESC").fetchall()
-    pending = conn.execute("SELECT * FROM pending_requests WHERE status = 'pendiente' ORDER BY requested_at DESC").fetchall()
+                flash(f"Clase agregada: {title}")
+        elif form_type == "manual":
+            name = request.form.get("name", "").strip()
+            email = request.form.get("email", "").strip().lower()
+            if name and email:
+                code = generate_code()
+                try:
+                    conn.execute(
+                        "INSERT INTO subscribers (name, email, access_code, status, created_at) VALUES (?, ?, ?, 'active', ?)",
+                        (name, email, code, datetime.now().isoformat())
+                    )
+                    conn.commit()
+                    flash(f"Acceso manual creado para {name} ({email}) — código: {code}")
+                except sqlite3.IntegrityError:
+                    flash("Ese correo ya tiene una cuenta registrada.")
+
+    subscribers = conn.execute("SELECT * FROM subscribers ORDER BY created_at DESC").fetchall()
+    lessons = conn.execute("SELECT * FROM lessons ORDER BY added_at DESC").fetchall()
     conn.close()
-    return render_template("admin_dashboard.html", students=students, pending=pending, course_title=COURSE_TITLE)
+    return render_template("admin_dashboard.html", subscribers=subscribers, lessons=lessons, course_title=COURSE_TITLE)
 
 
-@app.route("/admin/approve/<int:request_id>", methods=["POST"])
+@app.route("/admin/lessons/remove/<int:lesson_id>", methods=["POST"])
 @admin_required
-def admin_approve(request_id):
+def admin_remove_lesson(lesson_id):
     conn = get_db()
-    req = conn.execute("SELECT * FROM pending_requests WHERE id = ?", (request_id,)).fetchone()
-    if req:
-        code = generate_code()
-        try:
-            conn.execute(
-                "INSERT INTO students (name, email, access_code, enrolled_at) VALUES (?, ?, ?, ?)",
-                (req["name"], req["email"], code, datetime.now().isoformat())
-            )
-            conn.execute("UPDATE pending_requests SET status = 'aprobado' WHERE id = ?", (request_id,))
-            conn.commit()
-            flash(f"Aprobado: {req['name']} ({req['email']}) — código: {code}. Mándaselo por WhatsApp: {req['whatsapp']}")
-        except sqlite3.IntegrityError:
-            flash("Ese correo ya tenía una cuenta creada.")
-    conn.close()
-    return redirect(url_for("admin_dashboard"))
-
-
-@app.route("/admin/reject/<int:request_id>", methods=["POST"])
-@admin_required
-def admin_reject(request_id):
-    conn = get_db()
-    conn.execute("UPDATE pending_requests SET status = 'rechazado' WHERE id = ?", (request_id,))
+    conn.execute("DELETE FROM lessons WHERE id = ?", (lesson_id,))
     conn.commit()
     conn.close()
-    flash("Solicitud rechazada.")
+    flash("Clase eliminada.")
     return redirect(url_for("admin_dashboard"))
 
 
-@app.route("/admin/remove/<int:student_id>", methods=["POST"])
+@app.route("/admin/remove/<int:subscriber_id>", methods=["POST"])
 @admin_required
-def admin_remove(student_id):
+def admin_remove(subscriber_id):
     conn = get_db()
-    conn.execute("DELETE FROM students WHERE id = ?", (student_id,))
+    conn.execute("DELETE FROM subscribers WHERE id = ?", (subscriber_id,))
     conn.commit()
     conn.close()
     flash("Acceso revocado.")
