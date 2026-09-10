@@ -7,49 +7,45 @@
 <link rel="stylesheet" href="/static/style.css">
 <script src="https://checkout.culqi.com/js/v4"></script>
 <style>
-  .funnel-shell{max-width:600px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:40px 20px;background:var(--bg);}
-  .progress-dots{display:flex;justify-content:center;gap:8px;margin-bottom:36px;}
-  .progress-dots span{width:8px;height:8px;border-radius:50%;background:var(--line);transition:background .3s;}
-  .progress-dots span.active{background:var(--wine);width:22px;border-radius:4px;}
-  .step{display:none;animation:fadeIn .4s ease;}
-  .step.active{display:block;}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+  .sales-shell{max-width:640px;margin:0 auto;padding:50px 20px;background:var(--bg);}
+  .sales-hero{text-align:center;margin-bottom:36px;}
+  .sales-photo{width:110px;height:110px;border-radius:50%;object-fit:cover;margin:0 auto 16px;border:3px solid #fff;box-shadow:0 10px 26px rgba(0,0,0,.15);}
+  .sales-hero h1{font-size:26px;margin:0 0 6px;}
+  .sales-hero p.sub{color:var(--ink-soft);font-size:15px;}
+  .section-title{font-family:'Bebas Neue',sans-serif;letter-spacing:.06em;color:var(--wine);font-size:15px;margin-bottom:14px;}
 
-  .step-photo{width:100px;height:100px;border-radius:50%;object-fit:cover;margin:0 auto 20px;display:block;border:3px solid #fff;box-shadow:0 10px 26px rgba(0,0,0,.15);}
-  .step h1{font-size:28px;text-align:center;margin:0 0 12px;}
-  .step p.lead{text-align:center;color:var(--ink-soft);font-size:16px;max-width:440px;margin:0 auto 30px;}
-  .section-title{font-family:'Bebas Neue',sans-serif;letter-spacing:.06em;color:var(--wine);font-size:14px;text-align:center;margin-bottom:8px;}
-
-  .benefit-list{list-style:none;padding:0;margin:0 0 32px;}
-  .benefit-item{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line);}
+  .benefit-list{list-style:none;padding:0;margin:0 0 40px;background:#fff;border:1px solid var(--line);border-radius:16px;}
+  .benefit-item{display:flex;gap:12px;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line);font-size:14.5px;}
   .benefit-item:last-child{border-bottom:none;}
-  .benefit-icon{flex-shrink:0;width:32px;height:32px;border-radius:50%;background:var(--blush-soft);display:flex;align-items:center;justify-content:center;font-size:16px;}
-  .benefit-text b{display:block;font-size:15px;margin-bottom:2px;}
-  .benefit-text span{font-size:13px;color:var(--ink-soft);}
+  .benefit-check{color:var(--wine);font-weight:700;flex-shrink:0;}
 
-  .trust-row{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:30px;}
-  .trust-pill{background:#fff;border:1px solid var(--line);border-radius:100px;padding:8px 16px;font-size:12.5px;font-weight:500;}
-  .proof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:30px;}
+  .proof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:40px;}
   .proof-grid img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:12px;border:1px solid var(--line);}
-  .quote-box{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:10px;}
-  .quote-box p.q{font-size:15px;font-style:italic;margin-bottom:10px;}
-  .quote-box p.a{font-size:12px;color:var(--ink-soft);}
-  .stars{color:var(--wine);margin-bottom:8px;}
+  .quote-box{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px;margin-bottom:40px;}
+  .quote-box p.q{font-size:15.5px;font-style:italic;margin-bottom:12px;}
+  .quote-box p.a{font-size:12.5px;color:var(--ink-soft);}
+  .stars{color:var(--wine);margin-bottom:10px;}
 
-  .curriculum{background:#fff;border:1px solid var(--line);border-radius:16px;padding:6px 20px;margin-bottom:24px;}
-  .curriculum-item{display:flex;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);font-size:14px;}
+  .curriculum{background:#fff;border:1px solid var(--line);border-radius:16px;padding:6px 22px;margin-bottom:40px;}
+  .curriculum-item{display:flex;gap:14px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line);font-size:14px;}
   .curriculum-item:last-child{border-bottom:none;}
-  .curriculum-num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--wine);color:#0D0D0D;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:12px;}
-  .price-tag{text-align:center;margin-bottom:28px;}
-  .price-tag .amount{font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--wine);}
-  .price-tag .note{font-size:12.5px;color:var(--ink-soft);}
+  .curriculum-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--wine);color:#0D0D0D;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:13px;}
 
-  .nav-row{display:flex;gap:12px;margin-top:8px;}
-  .nav-row .btn{margin:0;}
-  .btn-back{background:transparent;border:1px solid var(--line);color:var(--ink-soft);}
+  .plans-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+  .plan-card{background:#fff;border:2px solid var(--line);border-radius:16px;padding:22px 18px;cursor:pointer;text-align:center;transition:border-color .2s;}
+  .plan-card.selected{border-color:var(--wine);}
+  .plan-card .tag{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:.05em;color:var(--ink-soft);}
+  .plan-card .amount{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--wine);margin:6px 0;}
+  .plan-card .note{font-size:11.5px;color:var(--ink-soft);}
+  .plan-card.best .tag{color:var(--wine);}
+  .plan-card.best{position:relative;}
+  .plan-card.best::before{content:"MÁS CONVENIENTE";position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--wine);color:#0D0D0D;font-family:'Bebas Neue',sans-serif;font-size:9.5px;letter-spacing:.04em;padding:3px 10px;border-radius:100px;white-space:nowrap;}
 
-  .checkout-card{background:#0D0D0D;border-radius:20px;padding:32px 26px;color:#fff;}
+  .urgency-banner{background:var(--blush-soft);border:1px solid var(--blush);border-radius:12px;padding:14px 18px;font-size:13px;text-align:center;margin-bottom:30px;}
+
+  .checkout-card{background:#0D0D0D;border-radius:20px;padding:36px 30px;color:#fff;}
   .checkout-card .section-title{color:var(--wine);}
+  .checkout-card h2{color:#fff;font-size:18px;margin:0 0 20px;}
   .checkout-card label{color:rgba(255,255,255,.85);}
   .checkout-card input[type=text],.checkout-card input[type=email]{background:#fff;}
   #resultado{margin-top:16px;font-size:13.5px;}
@@ -58,150 +54,93 @@
 </style>
 </head>
 <body>
-  <div class="funnel-shell">
-    <div class="progress-dots">
-      <span class="dot active"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
-    </div>
+  <div class="sales-shell">
 
-    <!-- PASO 1 — ENGANCHE -->
-    <div class="step active" data-step="1">
-      <img class="step-photo" src="/static/harold-photo.jpg" alt="Harold Parco">
-      <span class="brand-name" style="display:block;text-align:center;font-size:28px;">Harold Parco</span>
+    <div class="sales-hero">
+      <img class="sales-photo" src="/static/harold-photo.jpg" alt="Harold Parco">
+      <span class="brand-name" style="font-size:30px;">Harold Parco</span>
       <h1>{{ title }}</h1>
-      <p class="lead">{{ desc }}</p>
-      <button class="btn" onclick="nextStep()">Quiero saber más</button>
+      <p class="sub">{{ desc }}</p>
     </div>
 
-    <!-- PASO 2 — BENEFICIOS REALES -->
-    <div class="step" data-step="2">
-      <p class="section-title">LO QUE OBTIENES</p>
-      <h1 style="font-size:22px;">No es un curso, es una membresía</h1>
-      <ul class="benefit-list">
-        <li class="benefit-item">
-          <span class="benefit-icon">🎓</span>
-          <span class="benefit-text"><b>Clase nueva cada mes</b><span>El contenido nunca se detiene — siempre hay algo nuevo que aprender.</span></span>
-        </li>
-        <li class="benefit-item">
-          <span class="benefit-icon">♾️</span>
-          <span class="benefit-text"><b>Acceso completo, sin pagar por curso aparte</b><span>Todo lo que subamos está incluido en tu membresía.</span></span>
-        </li>
-        <li class="benefit-item">
-          <span class="benefit-icon">⏸️</span>
-          <span class="benefit-text"><b>Cancela cuando quieras</b><span>Sin contratos ni permanencia forzada — te quedas mientras te sirva.</span></span>
-        </li>
-        <li class="benefit-item">
-          <span class="benefit-icon">📱</span>
-          <span class="benefit-text"><b>A tu ritmo, desde tu celular</b><span>Repite cada clase las veces que necesites, cuando tengas tiempo.</span></span>
-        </li>
-        <li class="benefit-item">
-          <span class="benefit-icon">🏅</span>
-          <span class="benefit-text"><b>Certificación oficial incluida</b><span>El mismo respaldo con el que se formaron +600 alumnas.</span></span>
-        </li>
-        <li class="benefit-item">
-          <span class="benefit-icon">👥</span>
-          <span class="benefit-text"><b>Comunidad activa</b><span>Acompañamiento junto a otras alumnas en el mismo camino.</span></span>
-        </li>
-      </ul>
-      <div class="nav-row">
-        <button class="btn btn-back" onclick="prevStep()">Atrás</button>
-        <button class="btn" onclick="nextStep()">Ver el trabajo real</button>
-      </div>
+    <p class="section-title" style="text-align:center;">QUÉ INCLUYE TU MEMBRESÍA</p>
+    <ul class="benefit-list">
+      {% for benefit in benefits %}
+      <li class="benefit-item"><span class="benefit-check">✓</span> {{ benefit }}</li>
+      {% endfor %}
+    </ul>
+
+    <p class="section-title" style="text-align:center;">RESULTADOS REALES</p>
+    <div class="proof-grid">
+      <img src="/static/proof-1.jpg" alt="Trabajo real">
+      <img src="/static/proof-2.jpg" alt="Trabajo real">
+      <img src="/static/proof-3.jpg" alt="Trabajo real">
     </div>
 
-    <!-- PASO 3 — PRUEBA -->
-    <div class="step" data-step="3">
-      <p class="section-title">RESULTADOS REALES</p>
-      <h1 style="font-size:22px;">Esto es lo que vas a poder hacer</h1>
-      <div class="proof-grid">
-        <img src="/static/proof-1.jpg" alt="Trabajo real">
-        <img src="/static/proof-2.jpg" alt="Trabajo real">
-        <img src="/static/proof-3.jpg" alt="Trabajo real">
+    <div class="quote-box">
+      <div class="stars">★★★★★</div>
+      <p class="q">"{{ testimonial.quote }}"</p>
+      <p class="a">{{ testimonial.author }}</p>
+    </div>
+
+    {% if lessons %}
+    <p class="section-title" style="text-align:center;">ÚLTIMAS CLASES SUBIDAS</p>
+    <div class="curriculum">
+      {% for lesson in lessons %}
+      <div class="curriculum-item">
+        <span class="curriculum-num">{{ loop.index }}</span>
+        <span>{{ lesson.title }}</span>
       </div>
-      <div class="trust-row">
-        {% for point in trust_points %}
-        <span class="trust-pill">{{ point }}</span>
-        {% endfor %}
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <p class="section-title" style="text-align:center;">ELIGE TU PLAN</p>
+    <div class="plans-row">
+      <div class="plan-card selected" id="cardMensual" onclick="selectPlan('mensual')">
+        <div class="tag">MENSUAL</div>
+        <div class="amount">{{ monthly_price }}</div>
+        <div class="note">Cobro cada mes · cancela cuando quieras</div>
       </div>
-      <div class="quote-box">
-        <div class="stars">★★★★★</div>
-        <p class="q">"{{ testimonial.quote }}"</p>
-        <p class="a">{{ testimonial.author }}</p>
-      </div>
-      <div class="nav-row" style="margin-top:20px;">
-        <button class="btn btn-back" onclick="prevStep()">Atrás</button>
-        <button class="btn" onclick="nextStep()">Ver el plan</button>
+      <div class="plan-card best" id="cardAnual" onclick="selectPlan('anual')">
+        <div class="tag">ANUAL</div>
+        <div class="amount">{{ annual_price }}</div>
+        <div class="note">{{ annual_savings }}</div>
       </div>
     </div>
 
-    <!-- PASO 4 — OFERTA -->
-    <div class="step" data-step="4">
-      <p class="section-title">TU MEMBRESÍA</p>
-      <h1 style="font-size:22px;">{{ title }}</h1>
-      {% if lessons %}
-      <p style="text-align:center;color:var(--ink-soft);font-size:13px;margin-bottom:14px;">Últimas clases subidas:</p>
-      <div class="curriculum">
-        {% for lesson in lessons %}
-        <div class="curriculum-item">
-          <span class="curriculum-num">{{ loop.index }}</span>
-          <span>{{ lesson.title }}</span>
-        </div>
-        {% endfor %}
-      </div>
-      {% endif %}
-      <div class="price-tag">
-        <div class="amount">{{ price }}</div>
-        <div class="note">Cobro automático mensual. Cancela cuando quieras.</div>
-      </div>
-      <div class="nav-row">
-        <button class="btn btn-back" onclick="prevStep()">Atrás</button>
-        <button class="btn" onclick="nextStep()">Quiero suscribirme</button>
-      </div>
-    </div>
+    <div class="urgency-banner">⏳ {{ urgency_message }}</div>
 
-    <!-- PASO 5 — PAGO -->
-    <div class="step" data-step="5">
-      <div class="checkout-card">
-        <p class="section-title">ÚLTIMO PASO</p>
-        <h1 style="color:#fff;font-size:20px;text-align:left;margin:0 0 4px;">Activa tu membresía</h1>
-        <p style="color:rgba(255,255,255,.55);font-size:13px;margin-bottom:24px;">{{ price }} — cobro mensual automático</p>
+    <div class="checkout-card">
+      <p class="section-title">ACTIVAR MEMBRESÍA</p>
+      <h2 id="planResumen">Plan mensual — {{ monthly_price }} / mes</h2>
 
-        <label>Tu nombre completo</label>
-        <input type="text" id="name" required>
-        <label>Tu correo</label>
-        <input type="email" id="email" required>
+      <label>Tu nombre completo</label>
+      <input type="text" id="name" required>
+      <label>Tu correo</label>
+      <input type="email" id="email" required>
 
-        <button class="btn" id="btnPagar" type="button" style="margin-top:20px;">Suscribirme ahora</button>
+      <button class="btn" id="btnPagar" type="button" style="margin-top:20px;">Suscribirme ahora</button>
 
-        <div id="resultado"></div>
+      <div id="resultado"></div>
 
-        <p style="text-align:center;font-size:12px;color:rgba(255,255,255,.5);margin-top:16px;">
-          Pago seguro procesado por Culqi. Nunca vemos ni guardamos los datos de tu tarjeta.
-        </p>
-      </div>
-      <div class="nav-row" style="margin-top:16px;">
-        <button class="btn btn-back" onclick="prevStep()">Atrás</button>
-      </div>
+      <p style="text-align:center;font-size:12px;color:rgba(255,255,255,.5);margin-top:16px;">
+        Pago seguro procesado por Culqi. Nunca vemos ni guardamos los datos de tu tarjeta.
+      </p>
     </div>
 
   </div>
 
   <script>
-    let currentStep = 1;
-    const totalSteps = 5;
+    let selectedPlan = 'mensual';
 
-    function showStep(n) {
-      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-      document.querySelector(`.step[data-step="${n}"]`).classList.add('active');
-      document.querySelectorAll('.progress-dots .dot').forEach((d, i) => {
-        d.classList.toggle('active', i < n);
-      });
-      window.scrollTo({top: 0, behavior: 'smooth'});
-    }
-    function nextStep() {
-      if (currentStep < totalSteps) { currentStep++; showStep(currentStep); }
-    }
-    function prevStep() {
-      if (currentStep > 1) { currentStep--; showStep(currentStep); }
+    function selectPlan(plan) {
+      selectedPlan = plan;
+      document.getElementById('cardMensual').classList.toggle('selected', plan === 'mensual');
+      document.getElementById('cardAnual').classList.toggle('selected', plan === 'anual');
+      document.getElementById('planResumen').textContent = plan === 'mensual'
+        ? 'Plan mensual — {{ monthly_price }} / mes'
+        : 'Plan anual — {{ annual_price }} (pago único)';
     }
 
     Culqi.publicKey = "{{ culqi_public_key }}";
@@ -218,12 +157,15 @@
 
       window._suscripcionNombre = name;
       window._suscripcionCorreo = email;
+      window._suscripcionPlan = selectedPlan;
+
+      const amount = selectedPlan === 'anual' ? {{ annual_price_cents }} : {{ monthly_price_cents }};
 
       Culqi.settings({
         title: "{{ title }}",
         currency: "PEN",
-        description: "{{ title }}",
-        amount: 5000
+        description: selectedPlan === 'anual' ? "{{ title }} — Plan anual" : "{{ title }} — Plan mensual",
+        amount: amount
       });
       Culqi.open();
     });
@@ -238,7 +180,8 @@
           body: JSON.stringify({
             token_id: Culqi.token.id,
             name: window._suscripcionNombre,
-            email: window._suscripcionCorreo
+            email: window._suscripcionCorreo,
+            plan_type: window._suscripcionPlan
           })
         })
           .then(r => r.json())

@@ -20,15 +20,32 @@ ALLOWED_EXT = {"png", "jpg", "jpeg", "webp", "pdf"}
 # ==== CULQI — pega aquí tus llaves cuando las tengas (culqi.com > Llaves de integración) ====
 CULQI_PUBLIC_KEY = "pk_test_TU_LLAVE_PUBLICA_AQUI"
 CULQI_SECRET_KEY = "sk_test_TU_LLAVE_SECRETA_AQUI"
-CULQI_PLAN_ID = "pln_test_TU_PLAN_AQUI"  # crea el plan una vez desde tu Panel de Culqi (CulqiPanel > Suscripciones > Planes)
+CULQI_PLAN_ID = "pln_test_TU_PLAN_AQUI"  # crea el plan MENSUAL una vez desde tu Panel de Culqi (CulqiPanel > Suscripciones > Planes)
 culqi.private_key = CULQI_SECRET_KEY
 # ============================================================================================
 
 # ==== CONTENIDO Y MARCA (edita esto directamente) ====
-COURSE_TITLE = "Academia Harold Parco — Membresía mensual"
-COURSE_DESC = "Nuevas clases de técnicas de uñas cada mes: polygel, sistema dual, decoración y más. Mientras estés suscrita, tienes acceso a todo el contenido."
-COURSE_PRICE = "S/50 / mes"
+COURSE_TITLE = "Academia Harold Parco"
+COURSE_DESC = "Nuevas clases de técnicas de uñas cada mes: polygel, sistema dual, decoración y más."
 PAYMENT_WHATSAPP = "51936268510"
+
+# Precios — PENDIENTE: confirmar montos finales con Harold (estos son provisionales)
+MONTHLY_PRICE_LABEL = "S/50"
+MONTHLY_PRICE_CENTS = 5000
+ANNUAL_PRICE_LABEL = "S/480"
+ANNUAL_PRICE_CENTS = 48000
+ANNUAL_SAVINGS_LABEL = "Ahorras S/120 vs pagar mes a mes"
+
+# Beneficios — PENDIENTE: ajustar con datos reales que Harold confirme (horas de contenido, etc.)
+BENEFITS = [
+    "Nuevas clases agregadas cada mes",
+    "Acceso ilimitado a todo el contenido, sin pagar por curso aparte",
+    "Certificación oficial incluida",
+    "Acompañamiento en el grupo de la comunidad",  # PENDIENTE: crear el grupo real antes de publicar
+]
+
+URGENCY_MESSAGE = "El precio de lanzamiento sube pronto. Suscríbete ahora y lo mantienes fijo, aunque el contenido siga creciendo."
+
 TRUST_POINTS = [
     "+600 alumnas graduadas",
     "Embajador de Cherimoya Perú",
@@ -55,9 +72,12 @@ def init_db():
             name TEXT NOT NULL,
             email TEXT NOT NULL UNIQUE,
             access_code TEXT NOT NULL UNIQUE,
+            plan_type TEXT NOT NULL DEFAULT 'mensual',
             culqi_customer_id TEXT,
             culqi_card_id TEXT,
             culqi_subscription_id TEXT,
+            culqi_charge_id TEXT,
+            expires_at TEXT,
             status TEXT NOT NULL DEFAULT 'active',
             created_at TEXT NOT NULL,
             last_login TEXT
@@ -106,59 +126,79 @@ def suscribirme():
     conn = get_db()
     lessons = conn.execute("SELECT * FROM lessons ORDER BY added_at DESC LIMIT 5").fetchall()
     conn.close()
-    return render_template("suscribirme.html", title=COURSE_TITLE, desc=COURSE_DESC, price=COURSE_PRICE,
+    return render_template("suscribirme.html", title=COURSE_TITLE, desc=COURSE_DESC,
+                            monthly_price=MONTHLY_PRICE_LABEL, annual_price=ANNUAL_PRICE_LABEL,
+                            monthly_price_cents=MONTHLY_PRICE_CENTS, annual_price_cents=ANNUAL_PRICE_CENTS,
+                            annual_savings=ANNUAL_SAVINGS_LABEL, benefits=BENEFITS,
+                            urgency_message=URGENCY_MESSAGE,
                             lessons=lessons, trust_points=TRUST_POINTS, testimonial=TESTIMONIAL,
                             culqi_public_key=CULQI_PUBLIC_KEY)
 
 
 @app.route("/suscribirme/procesar", methods=["POST"])
 def suscribirme_procesar():
-    """Recibe el token de CulqiJS (la tarjeta ya la manejó Culqi, nunca pasa por aquí),
-    y crea Cliente -> Tarjeta -> Suscripción en Culqi."""
+    """Recibe el token de CulqiJS (la tarjeta ya la manejó Culqi, nunca pasa por aquí).
+    Si plan_type es 'mensual' -> crea una Suscripción (cobro recurrente).
+    Si plan_type es 'anual' -> hace un Cargo único (cobro una sola vez, acceso por 1 año)."""
     data = request.get_json()
     token_id = data.get("token_id")
     name = data.get("name", "").strip()
     email = data.get("email", "").strip().lower()
+    plan_type = data.get("plan_type", "mensual")
 
     if not (token_id and name and email):
         return jsonify({"ok": False, "error": "Faltan datos."}), 400
 
     try:
-        first_name, *rest = name.split(" ", 1)
-        last_name = rest[0] if rest else "-"
-
-        customer = culqi.Customer.create({
-            "first_name": first_name,
-            "last_name": last_name,
-            "email": email,
-            "address": "-",
-            "address_city": "-",
-            "country_code": "PE",
-            "phone_number": "999999999",
-        })
-
-        card = culqi.Card.create({
-            "customer_id": customer["id"],
-            "token_id": token_id,
-        })
-
-        subscription = culqi.Subscription.create({
-            "card_id": card["id"],
-            "plan_id": CULQI_PLAN_ID,
-            "tyc": True,
-        })
-
         code = generate_code()
         conn = get_db()
-        conn.execute(
-            """INSERT INTO subscribers
-               (name, email, access_code, culqi_customer_id, culqi_card_id, culqi_subscription_id, status, created_at)
-               VALUES (?, ?, ?, ?, ?, ?, 'active', ?)""",
-            (name, email, code, customer["id"], card["id"], subscription["id"], datetime.now().isoformat())
-        )
+
+        if plan_type == "anual":
+            charge = culqi.Charge.create({
+                "amount": ANNUAL_PRICE_CENTS,
+                "currency_code": "PEN",
+                "email": email,
+                "source_id": token_id,
+                "description": f"{COURSE_TITLE} — Plan anual",
+            })
+            expires_at = datetime.now().replace(year=datetime.now().year + 1).isoformat()
+            conn.execute(
+                """INSERT INTO subscribers
+                   (name, email, access_code, plan_type, culqi_charge_id, expires_at, status, created_at)
+                   VALUES (?, ?, ?, 'anual', ?, ?, 'active', ?)""",
+                (name, email, code, charge["id"], expires_at, datetime.now().isoformat())
+            )
+        else:
+            first_name, *rest = name.split(" ", 1)
+            last_name = rest[0] if rest else "-"
+
+            customer = culqi.Customer.create({
+                "first_name": first_name,
+                "last_name": last_name,
+                "email": email,
+                "address": "-",
+                "address_city": "-",
+                "country_code": "PE",
+                "phone_number": "999999999",
+            })
+            card = culqi.Card.create({
+                "customer_id": customer["id"],
+                "token_id": token_id,
+            })
+            subscription = culqi.Subscription.create({
+                "card_id": card["id"],
+                "plan_id": CULQI_PLAN_ID,
+                "tyc": True,
+            })
+            conn.execute(
+                """INSERT INTO subscribers
+                   (name, email, access_code, plan_type, culqi_customer_id, culqi_card_id, culqi_subscription_id, status, created_at)
+                   VALUES (?, ?, ?, 'mensual', ?, ?, ?, 'active', ?)""",
+                (name, email, code, customer["id"], card["id"], subscription["id"], datetime.now().isoformat())
+            )
+
         conn.commit()
         conn.close()
-
         return jsonify({"ok": True, "code": code})
 
     except Exception as e:
@@ -204,7 +244,7 @@ def login():
             "SELECT * FROM subscribers WHERE email = ? AND access_code = ?",
             (email, code)
         ).fetchone()
-        if sub and sub["status"] == "active":
+        if sub and sub["status"] == "active" and (sub["plan_type"] != "anual" or sub["expires_at"] > datetime.now().isoformat()):
             conn.execute("UPDATE subscribers SET last_login = ? WHERE id = ?",
                          (datetime.now().isoformat(), sub["id"]))
             conn.commit()
@@ -212,6 +252,9 @@ def login():
             session["student_email"] = email
             session["student_name"] = sub["name"]
             return redirect(url_for("curso"))
+        elif sub and sub["plan_type"] == "anual" and sub["expires_at"] and sub["expires_at"] <= datetime.now().isoformat():
+            conn.close()
+            flash("Tu plan anual venció. Escríbenos por WhatsApp para renovarlo.")
         elif sub and sub["status"] != "active":
             conn.close()
             flash("Tu suscripción no está activa (pago pendiente o cancelada). Escríbenos por WhatsApp.")
