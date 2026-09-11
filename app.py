@@ -38,23 +38,33 @@ ANNUAL_SAVINGS_LABEL = "Ahorras S/120 vs pagar mes a mes"
 
 # Beneficios — PENDIENTE: ajustar con datos reales que Harold confirme (horas de contenido, etc.)
 BENEFITS = [
-    "Nuevas clases agregadas cada mes",
-    "Acceso ilimitado a todo el contenido, sin pagar por curso aparte",
-    "Certificación oficial incluida",
-    "Acompañamiento en el grupo de la comunidad",  # PENDIENTE: crear el grupo real antes de publicar
+    {"icon": "🎬", "text": "Nuevas clases agregadas cada mes"},
+    {"icon": "🔓", "text": "Acceso ilimitado a todo el contenido, sin pagar por curso aparte"},
+    {"icon": "🏅", "text": "Certificación oficial incluida"},
+    {"icon": "💬", "text": "Acompañamiento en el grupo de la comunidad"},  # PENDIENTE: crear el grupo real antes de publicar
+]
+
+GALLERY = [
+    {"file": "gallery-1.jpg", "label": "Acrílico"},
+    {"file": "gallery-2.jpg", "label": "Polygel"},
+    {"file": "gallery-3.jpg", "label": "Sistema dual"},
+    {"file": "gallery-4.jpg", "label": "Cromado"},
+    {"file": "gallery-5.jpg", "label": "Técnicas mixtas"},
+    {"file": "gallery-6.jpg", "label": "Pedicura"},
 ]
 
 URGENCY_MESSAGE = "El precio de lanzamiento sube pronto. Suscríbete ahora y lo mantienes fijo, aunque el contenido siga creciendo."
 
 TRUST_POINTS = [
-    "+600 alumnas graduadas",
-    "Embajador de Cherimoya Perú",
-    "Certificación oficial incluida",
+    {"icon": "🎓", "text": "+600 alumnas graduadas"},
+    {"icon": "🤝", "text": "Embajador de Cherimoya Perú"},
+    {"icon": "🏅", "text": "Certificación oficial incluida"},
 ]
-TESTIMONIAL = {
-    "quote": "Excelente atención y servicio. El ambiente es súper relajante y el personal muy profesional. Totalmente recomendado.",
-    "author": "Angeles Principe Noel · Reseña en Google",
-}
+TESTIMONIALS = [
+    {"quote": "Excelente atención y servicio. El ambiente es súper relajante y el personal muy profesional. Me encantó el resultado de mis uñas y el masaje fue justo lo que necesitaba. Totalmente recomendado 🙌", "author": "Angeles Principe Noel · Reseña en Google"},
+    {"quote": "Excelente servicio, 10000/10.", "author": "Elizabeth Lopez Franco · Reseña en Google"},
+    {"quote": "Muy buena atención, me encantó el servicio! Gracias", "author": "Daniela Loyola Parraga · Reseña en Google"},
+]
 # ======================================================
 
 
@@ -88,6 +98,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
             video_url TEXT NOT NULL,
+            thumbnail TEXT,
             added_at TEXT NOT NULL
         )
     """)
@@ -99,6 +110,22 @@ def init_db():
 def generate_code(length=8):
     alphabet = string.ascii_uppercase + string.digits
     return ''.join(secrets.choice(alphabet) for _ in range(length))
+
+
+def normalizar_youtube(url):
+    """Acepta cualquier link de YouTube (normal, corto, ya-embed) y devuelve el formato embed."""
+    import re
+    patterns = [
+        r'(?:youtube\.com/watch\?v=)([\w-]+)',
+        r'(?:youtu\.be/)([\w-]+)',
+        r'(?:youtube\.com/embed/)([\w-]+)',
+        r'(?:youtube\.com/shorts/)([\w-]+)',
+    ]
+    for p in patterns:
+        m = re.search(p, url)
+        if m:
+            return f"https://www.youtube.com/embed/{m.group(1)}"
+    return url  # si no es YouTube (ej: Vimeo), lo dejamos tal cual
 
 
 def admin_required(f):
@@ -128,10 +155,12 @@ def suscribirme():
     conn.close()
     return render_template("suscribirme.html", title=COURSE_TITLE, desc=COURSE_DESC,
                             monthly_price=MONTHLY_PRICE_LABEL, annual_price=ANNUAL_PRICE_LABEL,
+                            annual_regular_price=f"S/{MONTHLY_PRICE_CENTS * 12 / 100:.0f}",
                             monthly_price_cents=MONTHLY_PRICE_CENTS, annual_price_cents=ANNUAL_PRICE_CENTS,
                             annual_savings=ANNUAL_SAVINGS_LABEL, benefits=BENEFITS,
                             urgency_message=URGENCY_MESSAGE,
-                            lessons=lessons, trust_points=TRUST_POINTS, testimonial=TESTIMONIAL,
+                            lessons=lessons, trust_points=TRUST_POINTS, testimonials=TESTIMONIALS,
+                            gallery=GALLERY,
                             culqi_public_key=CULQI_PUBLIC_KEY)
 
 
@@ -306,11 +335,18 @@ def admin_dashboard():
         form_type = request.form.get("form_type")
         if form_type == "lesson":
             title = request.form.get("lesson_title", "").strip()
-            video_url = request.form.get("lesson_video", "").strip()
+            video_url = normalizar_youtube(request.form.get("lesson_video", "").strip())
+            thumb_file = request.files.get("lesson_thumb")
+            thumbnail = None
+            if thumb_file and thumb_file.filename:
+                ext = thumb_file.filename.rsplit(".", 1)[-1].lower() if "." in thumb_file.filename else ""
+                if ext in ALLOWED_EXT:
+                    thumbnail = secure_filename(f"leccion_{secrets.token_hex(6)}.{ext}")
+                    thumb_file.save(os.path.join(app.config["UPLOAD_FOLDER"], thumbnail))
             if title and video_url:
                 conn.execute(
-                    "INSERT INTO lessons (title, video_url, added_at) VALUES (?, ?, ?)",
-                    (title, video_url, datetime.now().isoformat())
+                    "INSERT INTO lessons (title, video_url, thumbnail, added_at) VALUES (?, ?, ?, ?)",
+                    (title, video_url, thumbnail, datetime.now().isoformat())
                 )
                 conn.commit()
                 flash(f"Clase agregada: {title}")
@@ -332,7 +368,29 @@ def admin_dashboard():
     subscribers = conn.execute("SELECT * FROM subscribers ORDER BY created_at DESC").fetchall()
     lessons = conn.execute("SELECT * FROM lessons ORDER BY added_at DESC").fetchall()
     conn.close()
-    return render_template("admin_dashboard.html", subscribers=subscribers, lessons=lessons, course_title=COURSE_TITLE)
+
+    ahora = datetime.now().isoformat()
+    def esta_vigente(s):
+        if s["status"] != "active":
+            return False
+        if s["plan_type"] == "anual" and s["expires_at"] and s["expires_at"] <= ahora:
+            return False
+        return True
+
+    activas = [s for s in subscribers if esta_vigente(s)]
+    mensuales_activas = [s for s in activas if s["plan_type"] == "mensual"]
+    anuales_activas = [s for s in activas if s["plan_type"] == "anual"]
+    ingreso_mensual_estimado = len(mensuales_activas) * MONTHLY_PRICE_CENTS / 100
+
+    kpis = {
+        "total_activas": len(activas),
+        "mensuales": len(mensuales_activas),
+        "anuales": len(anuales_activas),
+        "ingreso_mensual": ingreso_mensual_estimado,
+    }
+
+    return render_template("admin_dashboard.html", subscribers=subscribers, lessons=lessons,
+                            course_title=COURSE_TITLE, kpis=kpis, ahora=ahora)
 
 
 @app.route("/admin/lessons/remove/<int:lesson_id>", methods=["POST"])

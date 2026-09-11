@@ -5,6 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Panel del negocio — Aula Virtual</title>
 <link rel="stylesheet" href="/static/style.css">
+<style>
+  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0 40px;}
+  .kpi-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 16px;text-align:center;}
+  .kpi-card .num{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--wine);}
+  .kpi-card .label{font-size:11.5px;color:var(--ink-soft);}
+  .card-list{display:grid;gap:12px;margin-bottom:16px;}
+  .lesson-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+  .lesson-thumb{width:52px;height:52px;border-radius:8px;object-fit:cover;flex-shrink:0;}
+  .lesson-thumb-placeholder{width:52px;height:52px;border-radius:8px;background:var(--blush-soft);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;}
+  .lesson-card .title{font-size:14px;font-weight:500;}
+  .lesson-card .date{font-size:11.5px;color:var(--ink-soft);}
+  .sub-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;}
+  .sub-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .sub-card-name{font-weight:600;font-size:14.5px;}
+  .badge{font-size:10.5px;padding:2px 9px;border-radius:100px;font-weight:600;}
+  .badge-active{background:#e3f3e6;color:#2e8a4a;}
+  .badge-off{background:#fbeaea;color:#a6342e;}
+  .badge-plan{background:var(--blush-soft);color:var(--wine);}
+  .sub-card-meta{font-size:12px;color:var(--ink-soft);line-height:1.6;}
+  .helptext{font-size:12px;color:var(--ink-soft);margin:-8px 0 16px;}
+  @media (max-width:640px){ .kpi-row{grid-template-columns:1fr 1fr;} }
+</style>
 </head>
 <body>
   <div class="wrap">
@@ -15,9 +37,6 @@
 
     <p class="eyebrow">PANEL DEL NEGOCIO</p>
     <h1 style="margin:8px 0 4px;">{{ course_title }}</h1>
-    <p style="color:var(--ink-soft);margin-bottom:10px;">
-      Las suscripciones nuevas llegan solas desde Culqi. Aquí subes el contenido nuevo cada mes y ves quién está activa.
-    </p>
 
     {% with messages = get_flashed_messages() %}
       {% if messages %}
@@ -25,43 +44,55 @@
       {% endif %}
     {% endwith %}
 
-    <h2 style="font-size:18px;margin-top:34px;">Subir clase nueva</h2>
-    <form method="post" class="add-form">
+    <div class="kpi-row">
+      <div class="kpi-card"><div class="num">{{ kpis.total_activas }}</div><div class="label">SUSCRIPTORAS ACTIVAS</div></div>
+      <div class="kpi-card"><div class="num">{{ kpis.mensuales }}</div><div class="label">PLAN MENSUAL</div></div>
+      <div class="kpi-card"><div class="num">{{ kpis.anuales }}</div><div class="label">PLAN ANUAL</div></div>
+      <div class="kpi-card"><div class="num">S/{{ "%.0f"|format(kpis.ingreso_mensual) }}</div><div class="label">INGRESO MENSUAL EST.</div></div>
+    </div>
+
+    <h2 style="font-size:18px;">Subir clase nueva</h2>
+    <p class="helptext">Pega cualquier link de YouTube (normal o corto) — lo convertimos solo al formato correcto. La foto es opcional, pero se ve mucho mejor con una.</p>
+    <form method="post" class="add-form" enctype="multipart/form-data">
       <input type="hidden" name="form_type" value="lesson">
       <div>
         <label>Título de la clase</label>
         <input type="text" name="lesson_title" required placeholder="Ej: Clase de octubre — decoración fantasía">
       </div>
       <div>
-        <label>Link del video (embed)</label>
-        <input type="text" name="lesson_video" required placeholder="https://www.youtube.com/embed/...">
+        <label>Link del video de YouTube</label>
+        <input type="text" name="lesson_video" required placeholder="Pega el link aquí tal cual">
+      </div>
+      <div>
+        <label>Foto de la clase (opcional)</label>
+        <input type="file" name="lesson_thumb" accept="image/*">
       </div>
       <button class="btn" type="submit">Subir clase</button>
     </form>
 
-    <table>
-      <thead>
-        <tr><th>Clase</th><th>Subida</th><th></th></tr>
-      </thead>
-      <tbody>
-        {% for l in lessons %}
-        <tr>
-          <td>{{ l.title }}</td>
-          <td>{{ l.added_at[:10] }}</td>
-          <td>
-            <form method="post" action="/admin/lessons/remove/{{ l.id }}" onsubmit="return confirm('¿Quitar esta clase?');">
-              <button class="remove-btn" type="submit">Quitar</button>
-            </form>
-          </td>
-        </tr>
+    <div class="card-list">
+      {% for l in lessons %}
+      <div class="lesson-card">
+        {% if l.thumbnail %}
+          <img class="lesson-thumb" src="/static/uploads/{{ l.thumbnail }}" alt="{{ l.title }}">
         {% else %}
-        <tr><td colspan="3" style="color:var(--ink-soft);">Todavía no subiste ninguna clase.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+          <span class="lesson-thumb-placeholder">💅</span>
+        {% endif %}
+        <div style="flex:1;">
+          <div class="title">{{ l.title }}</div>
+          <div class="date">Subida el {{ l.added_at[:10] }}</div>
+        </div>
+        <form method="post" action="/admin/lessons/remove/{{ l.id }}" onsubmit="return confirm('¿Quitar esta clase?');">
+          <button class="remove-btn" type="submit">Quitar</button>
+        </form>
+      </div>
+      {% else %}
+      <p style="color:var(--ink-soft);font-size:13.5px;">Todavía no subiste ninguna clase.</p>
+      {% endfor %}
+    </div>
 
     <h2 style="font-size:18px;margin-top:44px;">Crear acceso manual</h2>
-    <p style="color:var(--ink-soft);font-size:13px;margin-bottom:14px;">Para casos especiales (cortesía, pago fuera de Culqi). Lo normal es que las suscripciones lleguen solas.</p>
+    <p class="helptext">Para casos especiales (cortesía, pago fuera de Culqi). Lo normal es que las suscripciones lleguen solas.</p>
     <form method="post" class="add-form">
       <input type="hidden" name="form_type" value="manual">
       <div>
@@ -76,30 +107,31 @@
     </form>
 
     <h2 style="font-size:18px;margin-top:44px;">Suscriptoras ({{ subscribers|length }})</h2>
-    <table>
-      <thead>
-        <tr><th>Nombre</th><th>Correo</th><th>Código</th><th>Estado</th><th>Desde</th><th>Último ingreso</th><th></th></tr>
-      </thead>
-      <tbody>
-        {% for s in subscribers %}
-        <tr>
-          <td>{{ s.name }}</td>
-          <td>{{ s.email }}</td>
-          <td><span class="code-pill">{{ s.access_code }}</span></td>
-          <td>{% if s.status == 'active' %}<span style="color:#2e8a4a;">● Activa</span>{% else %}<span style="color:#a6342e;">● {{ s.status }}</span>{% endif %}</td>
-          <td>{{ s.created_at[:10] }}</td>
-          <td>{{ s.last_login[:16] if s.last_login else '—' }}</td>
-          <td>
-            <form method="post" action="/admin/remove/{{ s.id }}" onsubmit="return confirm('¿Quitar el acceso de {{ s.name }}?');">
-              <button class="remove-btn" type="submit">Quitar acceso</button>
-            </form>
-          </td>
-        </tr>
+    {% for s in subscribers %}
+    <div class="sub-card">
+      <div class="sub-card-top">
+        <span class="sub-card-name">{{ s.name }}</span>
+        {% if s.status == 'active' and (s.plan_type != 'anual' or not s.expires_at or s.expires_at > ahora) %}
+          <span class="badge badge-active">Activa</span>
+        {% elif s.plan_type == 'anual' and s.expires_at and s.expires_at <= ahora %}
+          <span class="badge badge-off">Vencida</span>
         {% else %}
-        <tr><td colspan="7" style="color:var(--ink-soft);">Todavía no hay suscriptoras.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+          <span class="badge badge-off">{{ s.status }}</span>
+        {% endif %}
+      </div>
+      <div class="sub-card-meta">
+        {{ s.email }} · <span class="badge badge-plan">{{ s.plan_type|capitalize }}</span><br>
+        Código: <span class="code-pill">{{ s.access_code }}</span> · Desde {{ s.created_at[:10] }}
+        {% if s.plan_type == 'anual' and s.expires_at %}· Vence {{ s.expires_at[:10] }}{% endif %}
+        {% if s.last_login %}<br>Último ingreso: {{ s.last_login[:16] }}{% endif %}
+      </div>
+      <form method="post" action="/admin/remove/{{ s.id }}" onsubmit="return confirm('¿Quitar el acceso de {{ s.name }}?');" style="margin-top:8px;">
+        <button class="remove-btn" type="submit">Quitar acceso</button>
+      </form>
+    </div>
+    {% else %}
+    <p style="color:var(--ink-soft);font-size:13.5px;">Todavía no hay suscriptoras.</p>
+    {% endfor %}
   </div>
 </body>
 </html>

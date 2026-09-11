@@ -14,106 +14,185 @@
   .sales-hero p.sub{color:var(--ink-soft);font-size:15px;}
   .section-title{font-family:'Bebas Neue',sans-serif;letter-spacing:.06em;color:var(--wine);font-size:15px;margin-bottom:14px;}
 
+  .trust-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:40px;}
+  .trust-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 10px;text-align:center;transition:transform .2s;}
+  .trust-card:hover{transform:translateY(-3px);}
+  .trust-icon{display:block;font-size:24px;margin-bottom:8px;}
+  .trust-card span:last-child{font-size:12px;font-weight:500;line-height:1.3;}
+
   .benefit-list{list-style:none;padding:0;margin:0 0 40px;background:#fff;border:1px solid var(--line);border-radius:16px;}
   .benefit-item{display:flex;gap:12px;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line);font-size:14.5px;}
   .benefit-item:last-child{border-bottom:none;}
-  .benefit-check{color:var(--wine);font-weight:700;flex-shrink:0;}
+  .benefit-icon{font-size:18px;flex-shrink:0;}
 
   .proof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:40px;}
-  .proof-grid img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:12px;border:1px solid var(--line);}
-  .quote-box{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px;margin-bottom:40px;}
-  .quote-box p.q{font-size:15.5px;font-style:italic;margin-bottom:12px;}
-  .quote-box p.a{font-size:12.5px;color:var(--ink-soft);}
+  .proof-item{margin:0;transition:transform .25s ease;}
+  .proof-item:hover{transform:translateY(-4px);}
+  .proof-item img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:12px;border:1px solid var(--line);display:block;}
+  .proof-item figcaption{text-align:center;font-size:11px;color:var(--ink-soft);margin-top:6px;font-weight:500;}
+
+  .testi-carousel{margin-bottom:40px;overflow:hidden;border-radius:16px;}
+  .testi-track{display:flex;transition:transform .35s ease;}
+  .testi-slide{flex:0 0 100%;background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px;box-sizing:border-box;}
+  .testi-slide p.q{font-size:15.5px;font-style:italic;margin-bottom:12px;}
+  .testi-slide p.a{font-size:12.5px;color:var(--ink-soft);}
+  .testi-dots{display:flex;justify-content:center;gap:7px;margin-top:12px;}
+  .testi-dot{width:7px;height:7px;border-radius:50%;background:var(--line);cursor:pointer;transition:background .2s,transform .2s;}
+  .testi-dot.active{background:var(--wine);transform:scale(1.3);}
   .stars{color:var(--wine);margin-bottom:10px;}
+
+  .reveal{opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s ease;}
+  .reveal.visible{opacity:1;transform:translateY(0);}
 
   .curriculum{background:#fff;border:1px solid var(--line);border-radius:16px;padding:6px 22px;margin-bottom:40px;}
   .curriculum-item{display:flex;gap:14px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line);font-size:14px;}
   .curriculum-item:last-child{border-bottom:none;}
   .curriculum-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--wine);color:#0D0D0D;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:13px;}
+  .curriculum-thumb{flex-shrink:0;width:44px;height:44px;border-radius:8px;object-fit:cover;}
 
   .plans-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
-  .plan-card{background:#fff;border:2px solid var(--line);border-radius:16px;padding:22px 18px;cursor:pointer;text-align:center;transition:border-color .2s;}
+  .plan-card{background:#fff;border:2px solid var(--line);border-radius:16px;padding:22px 18px;cursor:pointer;text-align:left;transition:border-color .2s,transform .2s,box-shadow .2s;}
+  .plan-card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.06);}
   .plan-card.selected{border-color:var(--wine);}
   .plan-card .tag{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:.05em;color:var(--ink-soft);}
   .plan-card .amount{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--wine);margin:6px 0;}
+  .amount-crossed{font-size:16px;color:var(--ink-soft);text-decoration:line-through;margin-right:8px;}
   .plan-card .note{font-size:11.5px;color:var(--ink-soft);}
   .plan-card.best .tag{color:var(--wine);}
   .plan-card.best{position:relative;}
-  .plan-card.best::before{content:"MÁS CONVENIENTE";position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--wine);color:#0D0D0D;font-family:'Bebas Neue',sans-serif;font-size:9.5px;letter-spacing:.04em;padding:3px 10px;border-radius:100px;white-space:nowrap;}
+  .plan-card.best::before{content:"MÁS CONVENIENTE";position:absolute;top:-10px;left:18px;background:var(--wine);color:#0D0D0D;font-family:'Bebas Neue',sans-serif;font-size:9.5px;letter-spacing:.04em;padding:3px 10px;border-radius:100px;white-space:nowrap;}
+  .plan-includes{list-style:none;padding:0;margin:0;border-top:1px solid var(--line);padding-top:12px;}
+  .plan-includes li{font-size:12.5px;color:var(--ink-soft);padding:4px 0;}
 
   .urgency-banner{background:var(--blush-soft);border:1px solid var(--blush);border-radius:12px;padding:14px 18px;font-size:13px;text-align:center;margin-bottom:30px;}
 
   .checkout-card{background:#0D0D0D;border-radius:20px;padding:36px 30px;color:#fff;}
   .checkout-card .section-title{color:var(--wine);}
-  .checkout-card h2{color:#fff;font-size:18px;margin:0 0 20px;}
+  .checkout-card h2{color:#fff;font-size:18px;margin:0 0 8px;}
+  .plan-resumen-line{color:rgba(255,255,255,.6);font-size:13px;margin-bottom:22px;}
+  .plan-resumen-line span{color:var(--wine);font-weight:600;}
   .checkout-card label{color:rgba(255,255,255,.85);}
   .checkout-card input[type=text],.checkout-card input[type=email]{background:#fff;}
   #resultado{margin-top:16px;font-size:13.5px;}
   .codigo-box{background:rgba(255,255,255,.08);border:1px solid var(--wine);border-radius:12px;padding:16px;text-align:center;margin-top:16px;}
   .codigo-box b{font-family:monospace;font-size:20px;color:var(--wine);letter-spacing:.1em;}
+
+  @media (max-width: 640px){
+    .sales-shell{padding:32px 16px;}
+    .sales-hero{margin-bottom:28px;}
+    .sales-photo{width:88px;height:88px;}
+    .sales-hero h1{font-size:22px;}
+    .sales-hero p.sub{font-size:14px;}
+    .section-title{font-size:13px;margin-bottom:12px;}
+
+    .benefit-list{margin-bottom:30px;}
+    .benefit-item{padding:14px 16px;font-size:13.5px;}
+
+    .proof-grid{gap:7px;margin-bottom:30px;}
+
+    .quote-box{padding:20px;margin-bottom:30px;}
+    .quote-box p.q{font-size:14px;}
+    .testi-slide{padding:20px;}
+    .testi-slide p.q{font-size:14px;}
+    .testi-carousel{margin-bottom:30px;}
+
+    .curriculum{padding:4px 16px;margin-bottom:30px;}
+    .curriculum-item{padding:13px 0;font-size:13px;}
+
+    .plans-row{grid-template-columns:1fr;gap:12px;}
+    .plan-card{padding:18px 16px;}
+    .plan-card .amount{font-size:24px;}
+    .plan-card.best::before{top:-9px;left:14px;}
+
+    .urgency-banner{font-size:12.5px;padding:12px 14px;margin-bottom:24px;}
+
+    .checkout-card{padding:28px 20px;border-radius:16px;}
+    .checkout-card h2{font-size:16px;}
+  }
 </style>
 </head>
 <body>
   <div class="sales-shell">
 
     <div class="sales-hero">
-      <img class="sales-photo" src="/static/harold-photo.jpg" alt="Harold Parco">
-      <span class="brand-name" style="font-size:30px;">Harold Parco</span>
-      <h1>{{ title }}</h1>
-      <p class="sub">{{ desc }}</p>
+      <img class="sales-photo reveal" src="/static/harold-photo.jpg" alt="Harold Parco">
+      <span class="brand-name reveal" style="font-size:30px;transition-delay:.08s;">Harold Parco</span>
+      <h1 class="reveal" style="transition-delay:.16s;">{{ title }}</h1>
+      <p class="sub reveal" style="transition-delay:.24s;">{{ desc }}</p>
     </div>
 
-    <p class="section-title" style="text-align:center;">QUÉ INCLUYE TU MEMBRESÍA</p>
+    <div class="trust-row">
+      {% for point in trust_points %}
+      <div class="trust-card reveal" style="transition-delay:{{ (loop.index0 * 0.08) | round(2) }}s;"><span class="trust-icon">{{ point.icon }}</span><span>{{ point.text }}</span></div>
+      {% endfor %}
+    </div>
+
+    <p class="section-title reveal" style="text-align:center;">QUÉ INCLUYE TU MEMBRESÍA</p>
     <ul class="benefit-list">
       {% for benefit in benefits %}
-      <li class="benefit-item"><span class="benefit-check">✓</span> {{ benefit }}</li>
+      <li class="benefit-item reveal" style="transition-delay:{{ (loop.index0 * 0.07) | round(2) }}s;"><span class="benefit-icon">{{ benefit.icon }}</span> {{ benefit.text }}</li>
       {% endfor %}
     </ul>
 
-    <p class="section-title" style="text-align:center;">RESULTADOS REALES</p>
+    <p class="section-title reveal" style="text-align:center;">RESULTADOS REALES</p>
     <div class="proof-grid">
-      <img src="/static/proof-1.jpg" alt="Trabajo real">
-      <img src="/static/proof-2.jpg" alt="Trabajo real">
-      <img src="/static/proof-3.jpg" alt="Trabajo real">
-    </div>
-
-    <div class="quote-box">
-      <div class="stars">★★★★★</div>
-      <p class="q">"{{ testimonial.quote }}"</p>
-      <p class="a">{{ testimonial.author }}</p>
-    </div>
-
-    {% if lessons %}
-    <p class="section-title" style="text-align:center;">ÚLTIMAS CLASES SUBIDAS</p>
-    <div class="curriculum">
-      {% for lesson in lessons %}
-      <div class="curriculum-item">
-        <span class="curriculum-num">{{ loop.index }}</span>
-        <span>{{ lesson.title }}</span>
-      </div>
+      {% for photo in gallery %}
+      <figure class="proof-item reveal" style="transition-delay:{{ (loop.index0 * 0.06) | round(2) }}s;">
+        <img src="/static/{{ photo.file }}" alt="{{ photo.label }}" loading="lazy">
+        <figcaption>{{ photo.label }}</figcaption>
+      </figure>
       {% endfor %}
     </div>
-    {% endif %}
 
-    <p class="section-title" style="text-align:center;">ELIGE TU PLAN</p>
-    <div class="plans-row">
-      <div class="plan-card selected" id="cardMensual" onclick="selectPlan('mensual')">
-        <div class="tag">MENSUAL</div>
-        <div class="amount">{{ monthly_price }}</div>
-        <div class="note">Cobro cada mes · cancela cuando quieras</div>
+    <div class="testi-carousel reveal">
+      <div class="testi-track" id="testiTrack">
+        {% for t in testimonials %}
+        <div class="testi-slide">
+          <div class="stars">★★★★★</div>
+          <p class="q">"{{ t.quote }}"</p>
+          <p class="a">{{ t.author }}</p>
+        </div>
+        {% endfor %}
       </div>
-      <div class="plan-card best" id="cardAnual" onclick="selectPlan('anual')">
-        <div class="tag">ANUAL</div>
-        <div class="amount">{{ annual_price }}</div>
-        <div class="note">{{ annual_savings }}</div>
+      <div class="testi-dots" id="testiDots">
+        {% for t in testimonials %}
+        <span class="testi-dot{{ ' active' if loop.first else '' }}" onclick="goToTesti({{ loop.index0 }})"></span>
+        {% endfor %}
       </div>
     </div>
 
-    <div class="urgency-banner">⏳ {{ urgency_message }}</div>
+    <p class="section-title reveal" style="text-align:center;">ELIGE TU PLAN</p>
+    <div class="plans-row">
+      <div class="plan-card selected reveal" id="cardMensual" onclick="selectPlan('mensual')">
+        <div class="tag">MENSUAL</div>
+        <div class="amount">{{ monthly_price }}</div>
+        <div class="note" style="margin-bottom:14px;">Cobro cada mes</div>
+        <ul class="plan-includes">
+          <li>✓ Acceso a todo el contenido</li>
+          <li>✓ Certificación oficial incluida</li>
+          <li>✓ Clase nueva cada mes</li>
+          <li>✓ Cancela cuando quieras</li>
+        </ul>
+      </div>
+      <div class="plan-card best reveal" id="cardAnual" onclick="selectPlan('anual')" style="transition-delay:.08s;">
+        <div class="tag">ANUAL</div>
+        <div class="amount"><span class="amount-crossed">{{ annual_regular_price }}</span> {{ annual_price }}</div>
+        <div class="note" style="margin-bottom:14px;">{{ annual_savings }}</div>
+        <ul class="plan-includes">
+          <li>✓ Todo lo del plan mensual</li>
+          <li>✓ Certificación oficial incluida</li>
+          <li>✓ Precio congelado todo el año</li>
+          <li>✓ No te preocupas por renovar cada mes</li>
+        </ul>
+      </div>
+    </div>
 
-    <div class="checkout-card">
-      <p class="section-title">ACTIVAR MEMBRESÍA</p>
-      <h2 id="planResumen">Plan mensual — {{ monthly_price }} / mes</h2>
+    <div class="urgency-banner reveal">⏳ {{ urgency_message }}</div>
+
+    <div class="checkout-card reveal">
+      <p class="section-title">ÚLTIMO PASO</p>
+      <h2>Completa tus datos para registrarte</h2>
+      <p class="plan-resumen-line">Plan elegido: <span id="planResumen">Mensual — {{ monthly_price }} / mes</span></p>
 
       <label>Tu nombre completo</label>
       <input type="text" id="name" required>
@@ -142,6 +221,50 @@
         ? 'Plan mensual — {{ monthly_price }} / mes'
         : 'Plan anual — {{ annual_price }} (pago único)';
     }
+
+    // --- Carrusel de testimonios (swipe + puntos) ---
+    const testiTrack = document.getElementById('testiTrack');
+    const testiDots = testiTrack ? document.querySelectorAll('#testiDots .testi-dot') : [];
+    let testiIndex = 0;
+    let testiTimer = null;
+
+    function goToTesti(i) {
+      testiIndex = i;
+      testiTrack.style.transform = `translateX(-${i * 100}%)`;
+      testiDots.forEach((dot, idx) => dot.classList.toggle('active', idx === i));
+      resetTestiAutoplay();
+    }
+
+    function resetTestiAutoplay() {
+      if (testiTimer) clearInterval(testiTimer);
+      if (testiDots.length > 1) {
+        testiTimer = setInterval(() => goToTesti((testiIndex + 1) % testiDots.length), 6000);
+      }
+    }
+
+    if (testiTrack && testiDots.length > 1) {
+      let touchStartX = 0;
+      testiTrack.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+      testiTrack.addEventListener('touchend', e => {
+        const diff = touchStartX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 40) {
+          if (diff > 0) goToTesti((testiIndex + 1) % testiDots.length);
+          else goToTesti((testiIndex - 1 + testiDots.length) % testiDots.length);
+        }
+      }, { passive: true });
+      resetTestiAutoplay();
+    }
+
+    // --- Animación al hacer scroll ---
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
     Culqi.publicKey = "{{ culqi_public_key }}";
 
