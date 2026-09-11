@@ -12,7 +12,7 @@
       <span class="brand-name">Harold Parco</span>
       <span class="brand-sub">AULA VIRTUAL</span>
 
-      {% with messages = get_flashed_messages() %}
+      {% with messages = get_flashed_messages(category_filter=["login"]) %}
         {% if messages %}
           {% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}
         {% endif %}

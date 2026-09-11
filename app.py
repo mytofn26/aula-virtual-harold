@@ -283,13 +283,13 @@ def login():
             return redirect(url_for("curso"))
         elif sub and sub["plan_type"] == "anual" and sub["expires_at"] and sub["expires_at"] <= datetime.now().isoformat():
             conn.close()
-            flash("Tu plan anual venció. Escríbenos por WhatsApp para renovarlo.")
+            flash("Tu plan anual venció. Escríbenos por WhatsApp para renovarlo.", "login")
         elif sub and sub["status"] != "active":
             conn.close()
-            flash("Tu suscripción no está activa (pago pendiente o cancelada). Escríbenos por WhatsApp.")
+            flash("Tu suscripción no está activa (pago pendiente o cancelada). Escríbenos por WhatsApp.", "login")
         else:
             conn.close()
-            flash("Correo o código incorrecto. Verifica con quien te lo entregó.")
+            flash("Correo o código incorrecto. Verifica con quien te lo entregó.", "login")
     return render_template("login.html")
 
 
@@ -323,7 +323,7 @@ def admin_login():
         if password == ADMIN_PASSWORD:
             session["is_admin"] = True
             return redirect(url_for("admin_dashboard"))
-        flash("Contraseña de administrador incorrecta.")
+        flash("Contraseña de administrador incorrecta.", "admin_login")
     return render_template("admin_login.html")
 
 
@@ -349,7 +349,7 @@ def admin_dashboard():
                     (title, video_url, thumbnail, datetime.now().isoformat())
                 )
                 conn.commit()
-                flash(f"Clase agregada: {title}")
+                flash(f"Clase agregada: {title}", "admin")
         elif form_type == "manual":
             name = request.form.get("name", "").strip()
             email = request.form.get("email", "").strip().lower()
@@ -361,9 +361,9 @@ def admin_dashboard():
                         (name, email, code, datetime.now().isoformat())
                     )
                     conn.commit()
-                    flash(f"Acceso manual creado para {name} ({email}) — código: {code}")
+                    flash(f"Acceso manual creado para {name} ({email}) — código: {code}", "admin")
                 except sqlite3.IntegrityError:
-                    flash("Ese correo ya tiene una cuenta registrada.")
+                    flash("Ese correo ya tiene una cuenta registrada.", "admin")
 
     subscribers = conn.execute("SELECT * FROM subscribers ORDER BY created_at DESC").fetchall()
     lessons = conn.execute("SELECT * FROM lessons ORDER BY added_at DESC").fetchall()
@@ -400,7 +400,7 @@ def admin_remove_lesson(lesson_id):
     conn.execute("DELETE FROM lessons WHERE id = ?", (lesson_id,))
     conn.commit()
     conn.close()
-    flash("Clase eliminada.")
+    flash("Clase eliminada.", "admin")
     return redirect(url_for("admin_dashboard"))
 
 
@@ -411,7 +411,7 @@ def admin_remove(subscriber_id):
     conn.execute("DELETE FROM subscribers WHERE id = ?", (subscriber_id,))
     conn.commit()
     conn.close()
-    flash("Acceso revocado.")
+    flash("Acceso revocado.", "admin")
     return redirect(url_for("admin_dashboard"))
 
 
