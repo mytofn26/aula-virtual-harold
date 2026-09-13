@@ -56,8 +56,17 @@
     <form method="post" class="add-form" enctype="multipart/form-data">
       <input type="hidden" name="form_type" value="lesson">
       <div>
+        <label>Grupo / técnica</label>
+        <input type="text" name="lesson_category" list="categorias-existentes" placeholder="Ej: Polygel, Acrílico...">
+        <datalist id="categorias-existentes">
+          {% for grupo in lesson_groups %}
+          <option value="{{ grupo.nombre }}">
+          {% endfor %}
+        </datalist>
+      </div>
+      <div>
         <label>Título de la clase</label>
-        <input type="text" name="lesson_title" required placeholder="Ej: Clase de octubre — decoración fantasía">
+        <input type="text" name="lesson_title" required placeholder="Ej: Video 1 — base y preparación">
       </div>
       <div>
         <label>Link del video de YouTube</label>
@@ -70,8 +79,10 @@
       <button class="btn" type="submit">Subir clase</button>
     </form>
 
+    {% for grupo in lesson_groups %}
+    <p style="font-family:'Bebas Neue',sans-serif;letter-spacing:.04em;color:var(--wine);font-size:15px;margin:22px 0 8px;">{{ grupo.nombre }}</p>
     <div class="card-list">
-      {% for l in lessons %}
+      {% for l in grupo.clases %}
       <div class="lesson-card">
         {% if l.thumbnail %}
           <img class="lesson-thumb" src="/static/uploads/{{ l.thumbnail }}" alt="{{ l.title }}">
@@ -86,10 +97,11 @@
           <button class="remove-btn" type="submit">Quitar</button>
         </form>
       </div>
-      {% else %}
-      <p style="color:var(--ink-soft);font-size:13.5px;">Todavía no subiste ninguna clase.</p>
       {% endfor %}
     </div>
+    {% else %}
+    <p style="color:var(--ink-soft);font-size:13.5px;">Todavía no subiste ninguna clase.</p>
+    {% endfor %}
 
     <h2 style="font-size:18px;margin-top:44px;">Crear acceso manual</h2>
     <p class="helptext">Para casos especiales (cortesía, pago fuera de Culqi). Lo normal es que las suscripciones lleguen solas.</p>

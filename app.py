@@ -15,7 +15,7 @@ DB_PATH = "aula.db"
 ADMIN_PASSWORD = "harold2026"  # cámbiala antes de publicar
 UPLOAD_FOLDER = os.path.join("static", "uploads")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-ALLOWED_EXT = {"png", "jpg", "jpeg", "webp", "pdf"}
+ALLOWED_EXT = {"png", "jpg", "jpeg", "webp"}
 
 # ==== CULQI — pega aquí tus llaves cuando las tengas (culqi.com > Llaves de integración) ====
 CULQI_PUBLIC_KEY = "pk_test_TU_LLAVE_PUBLICA_AQUI"
@@ -99,10 +99,21 @@ def init_db():
             title TEXT NOT NULL,
             video_url TEXT NOT NULL,
             thumbnail TEXT,
+            category TEXT NOT NULL DEFAULT 'General',
             added_at TEXT NOT NULL
         )
     """)
     conn.commit()
+
+    # Migración segura: si la tabla ya existía desde antes de agregar estas columnas, se las añadimos ahora sin borrar nada.
+    columnas_actuales = [fila[1] for fila in conn.execute("PRAGMA table_info(lessons)").fetchall()]
+    if "category" not in columnas_actuales:
+        conn.execute("ALTER TABLE lessons ADD COLUMN category TEXT NOT NULL DEFAULT 'General'")
+        conn.commit()
+    if "thumbnail" not in columnas_actuales:
+        conn.execute("ALTER TABLE lessons ADD COLUMN thumbnail TEXT")
+        conn.commit()
+
     conn.close()
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
@@ -110,6 +121,18 @@ def init_db():
 def generate_code(length=8):
     alphabet = string.ascii_uppercase + string.digits
     return ''.join(secrets.choice(alphabet) for _ in range(length))
+
+
+def agrupar_por_categoria(lessons):
+    """Recibe las clases ya ordenadas por categoría y agrega la fecha, y las devuelve
+    agrupadas: [{"nombre": "Polygel", "clases": [...]}, {"nombre": "Acrílico", "clases": [...]}]"""
+    grupos = []
+    for lesson in lessons:
+        if grupos and grupos[-1]["nombre"] == lesson["category"]:
+            grupos[-1]["clases"].append(lesson)
+        else:
+            grupos.append({"nombre": lesson["category"], "clases": [lesson]})
+    return grupos
 
 
 def normalizar_youtube(url):
@@ -151,7 +174,6 @@ def student_required(f):
 @app.route("/suscribirme")
 def suscribirme():
     conn = get_db()
-    lessons = conn.execute("SELECT * FROM lessons ORDER BY added_at DESC LIMIT 5").fetchall()
     conn.close()
     return render_template("suscribirme.html", title=COURSE_TITLE, desc=COURSE_DESC,
                             monthly_price=MONTHLY_PRICE_LABEL, annual_price=ANNUAL_PRICE_LABEL,
@@ -159,7 +181,7 @@ def suscribirme():
                             monthly_price_cents=MONTHLY_PRICE_CENTS, annual_price_cents=ANNUAL_PRICE_CENTS,
                             annual_savings=ANNUAL_SAVINGS_LABEL, benefits=BENEFITS,
                             urgency_message=URGENCY_MESSAGE,
-                            lessons=lessons, trust_points=TRUST_POINTS, testimonials=TESTIMONIALS,
+                            trust_points=TRUST_POINTS, testimonials=TESTIMONIALS,
                             gallery=GALLERY,
                             culqi_public_key=CULQI_PUBLIC_KEY)
 
@@ -297,13 +319,15 @@ def login():
 @student_required
 def curso():
     conn = get_db()
-    lessons = conn.execute("SELECT * FROM lessons ORDER BY added_at DESC").fetchall()
+    lessons = conn.execute("SELECT * FROM lessons ORDER BY category ASC, added_at ASC").fetchall()
+    lesson_groups = agrupar_por_categoria(lessons)
     conn.close()
     return render_template(
         "course.html",
         title=COURSE_TITLE,
         desc=COURSE_DESC,
         lessons=lessons,
+        lesson_groups=lesson_groups,
         student_name=session.get("student_name"),
     )
 
@@ -336,6 +360,7 @@ def admin_dashboard():
         if form_type == "lesson":
             title = request.form.get("lesson_title", "").strip()
             video_url = normalizar_youtube(request.form.get("lesson_video", "").strip())
+            category = request.form.get("lesson_category", "").strip() or "General"
             thumb_file = request.files.get("lesson_thumb")
             thumbnail = None
             if thumb_file and thumb_file.filename:
@@ -345,8 +370,8 @@ def admin_dashboard():
                     thumb_file.save(os.path.join(app.config["UPLOAD_FOLDER"], thumbnail))
             if title and video_url:
                 conn.execute(
-                    "INSERT INTO lessons (title, video_url, thumbnail, added_at) VALUES (?, ?, ?, ?)",
-                    (title, video_url, thumbnail, datetime.now().isoformat())
+                    "INSERT INTO lessons (title, video_url, thumbnail, category, added_at) VALUES (?, ?, ?, ?, ?)",
+                    (title, video_url, thumbnail, category, datetime.now().isoformat())
                 )
                 conn.commit()
                 flash(f"Clase agregada: {title}", "admin")
@@ -357,7 +382,7 @@ def admin_dashboard():
                 code = generate_code()
                 try:
                     conn.execute(
-                        "INSERT INTO subscribers (name, email, access_code, status, created_at) VALUES (?, ?, ?, 'active', ?)",
+                        "INSERT INTO subscribers (name, email, access_code, plan_type, status, created_at) VALUES (?, ?, ?, 'manual', 'active', ?)",
                         (name, email, code, datetime.now().isoformat())
                     )
                     conn.commit()
@@ -366,7 +391,8 @@ def admin_dashboard():
                     flash("Ese correo ya tiene una cuenta registrada.", "admin")
 
     subscribers = conn.execute("SELECT * FROM subscribers ORDER BY created_at DESC").fetchall()
-    lessons = conn.execute("SELECT * FROM lessons ORDER BY added_at DESC").fetchall()
+    lessons = conn.execute("SELECT * FROM lessons ORDER BY category ASC, added_at ASC").fetchall()
+    lesson_groups = agrupar_por_categoria(lessons)
     conn.close()
 
     ahora = datetime.now().isoformat()
@@ -389,7 +415,7 @@ def admin_dashboard():
         "ingreso_mensual": ingreso_mensual_estimado,
     }
 
-    return render_template("admin_dashboard.html", subscribers=subscribers, lessons=lessons,
+    return render_template("admin_dashboard.html", subscribers=subscribers, lessons=lessons, lesson_groups=lesson_groups,
                             course_title=COURSE_TITLE, kpis=kpis, ahora=ahora)
 
 

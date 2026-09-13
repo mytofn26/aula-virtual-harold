@@ -19,11 +19,14 @@
       <p style="color:var(--ink-soft);max-width:600px;">{{ desc }}</p>
     </div>
 
-    {% for lesson in lessons %}
+    {% for grupo in lesson_groups %}
+    <h2 style="font-family:'Bebas Neue',sans-serif;letter-spacing:.04em;color:var(--wine);font-size:20px;margin:34px 0 14px;border-bottom:1px solid var(--line);padding-bottom:8px;">{{ grupo.nombre }}</h2>
+    {% for lesson in grupo.clases %}
     <div class="lesson">
       <h3>{{ loop.index }}. {{ lesson.title }}</h3>
       <iframe src="{{ lesson.video_url }}" allowfullscreen></iframe>
     </div>
+    {% endfor %}
     {% endfor %}
 
     <p style="text-align:center;color:var(--ink-soft);font-size:12.5px;margin:40px 0;">
