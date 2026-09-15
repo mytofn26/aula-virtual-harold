@@ -9,10 +9,10 @@ from flask import Flask, render_template, request, redirect, session, url_for, f
 import culqi
 
 app = Flask(__name__)
-app.secret_key = "cambia-esta-clave-en-produccion-por-una-larga-y-aleatoria"
+app.secret_key = os.environ.get("SECRET_KEY", "cambia-esta-clave-en-produccion-por-una-larga-y-aleatoria")
 
 DB_PATH = "aula.db"
-ADMIN_PASSWORD = "harold2026"  # cámbiala antes de publicar
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "harold2026")  # cámbiala en Render, no aquí
 UPLOAD_FOLDER = os.path.join("static", "uploads")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 ALLOWED_EXT = {"png", "jpg", "jpeg", "webp"}

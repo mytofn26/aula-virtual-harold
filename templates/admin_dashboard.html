@@ -6,26 +6,52 @@
 <title>Panel del negocio — Aula Virtual</title>
 <link rel="stylesheet" href="/static/style.css">
 <style>
-  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0 40px;}
+  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0 8px;}
   .kpi-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 16px;text-align:center;}
-  .kpi-card .num{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--wine);}
-  .kpi-card .label{font-size:11.5px;color:var(--ink-soft);}
-  .card-list{display:grid;gap:12px;margin-bottom:16px;}
-  .lesson-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+  .kpi-card .kpi-icon{font-size:20px;display:block;margin-bottom:6px;}
+  .kpi-card .num{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--ink);}
+  .kpi-card .label{font-size:11px;color:var(--ink-soft);letter-spacing:.02em;}
+
+  .section-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:26px 24px;margin-top:24px;}
+  .section-head{display:flex;align-items:center;gap:12px;margin-bottom:4px;}
+  .section-icon{font-size:22px;background:var(--bg);border-radius:10px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .section-head h2{font-size:17px;margin:0;}
+  .helptext{font-size:12.5px;color:var(--ink-soft);margin:4px 0 20px 54px;}
+
+  .card-list{display:grid;gap:12px;margin-bottom:8px;}
+  .lesson-card{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;}
   .lesson-thumb{width:52px;height:52px;border-radius:8px;object-fit:cover;flex-shrink:0;}
   .lesson-thumb-placeholder{width:52px;height:52px;border-radius:8px;background:var(--blush-soft);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;}
   .lesson-card .title{font-size:14px;font-weight:500;}
   .lesson-card .date{font-size:11.5px;color:var(--ink-soft);}
-  .sub-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;}
+  .group-label{display:flex;align-items:center;gap:8px;font-family:'Bebas Neue',sans-serif;letter-spacing:.04em;color:var(--ink);font-size:15px;margin:20px 0 8px;}
+  .group-count{font-family:'Inter',sans-serif;letter-spacing:0;font-size:11px;color:var(--ink-soft);background:var(--bg);border-radius:100px;padding:2px 9px;}
+
+  .sub-card{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;}
   .sub-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
   .sub-card-name{font-weight:600;font-size:14.5px;}
   .badge{font-size:10.5px;padding:2px 9px;border-radius:100px;font-weight:600;}
   .badge-active{background:#e3f3e6;color:#2e8a4a;}
   .badge-off{background:#fbeaea;color:#a6342e;}
-  .badge-plan{background:var(--blush-soft);color:var(--wine);}
+  .badge-plan{background:var(--blush-soft);color:var(--wine-dark);}
   .sub-card-meta{font-size:12px;color:var(--ink-soft);line-height:1.6;}
-  .helptext{font-size:12px;color:var(--ink-soft);margin:-8px 0 16px;}
-  @media (max-width:640px){ .kpi-row{grid-template-columns:1fr 1fr;} }
+
+  .empty-state{background:var(--bg);border:1px dashed var(--line);border-radius:12px;padding:20px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+
+  /* Selector de archivo con estilo propio, en vez del botón gris del navegador */
+  .file-drop{display:flex;align-items:center;gap:10px;border:1.5px dashed var(--line);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .2s,background .2s;background:var(--bg);}
+  .file-drop:hover{border-color:var(--wine);}
+  .file-drop-icon{font-size:18px;}
+  .file-drop-text{font-size:13.5px;color:var(--ink-soft);}
+  .file-drop input[type=file]{display:none;}
+
+  .remove-btn{display:inline-flex;align-items:center;gap:6px;}
+
+  @media (max-width:640px){
+    .kpi-row{grid-template-columns:1fr 1fr;}
+    .section-card{padding:20px 16px;}
+    .helptext{margin-left:0;}
+  }
 </style>
 </head>
 <body>
@@ -37,113 +63,143 @@
 
     <p class="eyebrow">PANEL DEL NEGOCIO</p>
     <h1 style="margin:8px 0 4px;">{{ course_title }}</h1>
+    <p style="color:var(--ink-soft);font-size:14px;margin-top:0;">Desde aquí subes tus clases, revisas cuántas alumnas tienes activas, y das accesos manuales cuando haga falta.</p>
 
     {% with messages = get_flashed_messages(category_filter=["admin"]) %}
       {% if messages %}
-        {% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}
+        {% for m in messages %}<div class="flash">✅ {{ m }}</div>{% endfor %}
       {% endif %}
     {% endwith %}
 
     <div class="kpi-row">
-      <div class="kpi-card"><div class="num">{{ kpis.total_activas }}</div><div class="label">SUSCRIPTORAS ACTIVAS</div></div>
-      <div class="kpi-card"><div class="num">{{ kpis.mensuales }}</div><div class="label">PLAN MENSUAL</div></div>
-      <div class="kpi-card"><div class="num">{{ kpis.anuales }}</div><div class="label">PLAN ANUAL</div></div>
-      <div class="kpi-card"><div class="num">S/{{ "%.0f"|format(kpis.ingreso_mensual) }}</div><div class="label">INGRESO MENSUAL EST.</div></div>
+      <div class="kpi-card"><span class="kpi-icon">🎓</span><div class="num">{{ kpis.total_activas }}</div><div class="label">ALUMNAS ACTIVAS</div></div>
+      <div class="kpi-card"><span class="kpi-icon">📅</span><div class="num">{{ kpis.mensuales }}</div><div class="label">PLAN MENSUAL</div></div>
+      <div class="kpi-card"><span class="kpi-icon">🏆</span><div class="num">{{ kpis.anuales }}</div><div class="label">PLAN ANUAL</div></div>
+      <div class="kpi-card"><span class="kpi-icon">💰</span><div class="num">S/{{ "%.0f"|format(kpis.ingreso_mensual) }}</div><div class="label">INGRESO EST. / MES</div></div>
     </div>
 
-    <h2 style="font-size:18px;">Subir clase nueva</h2>
-    <p class="helptext">Pega cualquier link de YouTube (normal o corto) — lo convertimos solo al formato correcto. La foto es opcional, pero se ve mucho mejor con una.</p>
-    <form method="post" class="add-form" enctype="multipart/form-data">
-      <input type="hidden" name="form_type" value="lesson">
-      <div>
-        <label>Grupo / técnica</label>
-        <input type="text" name="lesson_category" list="categorias-existentes" placeholder="Ej: Polygel, Acrílico...">
-        <datalist id="categorias-existentes">
-          {% for grupo in lesson_groups %}
-          <option value="{{ grupo.nombre }}">
-          {% endfor %}
-        </datalist>
+    <div class="section-card">
+      <div class="section-head">
+        <span class="section-icon">🎬</span>
+        <h2>Subir una clase nueva</h2>
       </div>
-      <div>
-        <label>Título de la clase</label>
-        <input type="text" name="lesson_title" required placeholder="Ej: Video 1 — base y preparación">
-      </div>
-      <div>
-        <label>Link del video de YouTube</label>
-        <input type="text" name="lesson_video" required placeholder="Pega el link aquí tal cual">
-      </div>
-      <div>
-        <label>Foto de la clase (opcional)</label>
-        <input type="file" name="lesson_thumb" accept="image/*">
-      </div>
-      <button class="btn" type="submit">Subir clase</button>
-    </form>
-
-    {% for grupo in lesson_groups %}
-    <p style="font-family:'Bebas Neue',sans-serif;letter-spacing:.04em;color:var(--wine);font-size:15px;margin:22px 0 8px;">{{ grupo.nombre }}</p>
-    <div class="card-list">
-      {% for l in grupo.clases %}
-      <div class="lesson-card">
-        {% if l.thumbnail %}
-          <img class="lesson-thumb" src="/static/uploads/{{ l.thumbnail }}" alt="{{ l.title }}">
-        {% else %}
-          <span class="lesson-thumb-placeholder">💅</span>
-        {% endif %}
-        <div style="flex:1;">
-          <div class="title">{{ l.title }}</div>
-          <div class="date">Subida el {{ l.added_at[:10] }}</div>
+      <p class="helptext">Pega el link del video de YouTube (cualquier formato, lo acomodamos solo) y dile a qué grupo pertenece, para que se vea ordenado por técnica.</p>
+      <form method="post" class="add-form" enctype="multipart/form-data">
+        <input type="hidden" name="form_type" value="lesson">
+        <div>
+          <label>Grupo o técnica</label>
+          <input type="text" name="lesson_category" list="categorias-existentes" placeholder="Ej: Polygel, Acrílico, Sistema dual...">
+          <datalist id="categorias-existentes">
+            {% for grupo in lesson_groups %}
+            <option value="{{ grupo.nombre }}">
+            {% endfor %}
+          </datalist>
         </div>
-        <form method="post" action="/admin/lessons/remove/{{ l.id }}" onsubmit="return confirm('¿Quitar esta clase?');">
-          <button class="remove-btn" type="submit">Quitar</button>
-        </form>
-      </div>
-      {% endfor %}
-    </div>
-    {% else %}
-    <p style="color:var(--ink-soft);font-size:13.5px;">Todavía no subiste ninguna clase.</p>
-    {% endfor %}
-
-    <h2 style="font-size:18px;margin-top:44px;">Crear acceso manual</h2>
-    <p class="helptext">Para casos especiales (cortesía, pago fuera de Culqi). Lo normal es que las suscripciones lleguen solas.</p>
-    <form method="post" class="add-form">
-      <input type="hidden" name="form_type" value="manual">
-      <div>
-        <label>Nombre de la alumna</label>
-        <input type="text" name="name" required>
-      </div>
-      <div>
-        <label>Correo</label>
-        <input type="email" name="email" required>
-      </div>
-      <button class="btn" type="submit">Crear acceso</button>
-    </form>
-
-    <h2 style="font-size:18px;margin-top:44px;">Suscriptoras ({{ subscribers|length }})</h2>
-    {% for s in subscribers %}
-    <div class="sub-card">
-      <div class="sub-card-top">
-        <span class="sub-card-name">{{ s.name }}</span>
-        {% if s.status == 'active' and (s.plan_type != 'anual' or not s.expires_at or s.expires_at > ahora) %}
-          <span class="badge badge-active">Activa</span>
-        {% elif s.plan_type == 'anual' and s.expires_at and s.expires_at <= ahora %}
-          <span class="badge badge-off">Vencida</span>
-        {% else %}
-          <span class="badge badge-off">{{ s.status }}</span>
-        {% endif %}
-      </div>
-      <div class="sub-card-meta">
-        {{ s.email }} · <span class="badge badge-plan">{{ s.plan_type|capitalize }}</span><br>
-        Código: <span class="code-pill">{{ s.access_code }}</span> · Desde {{ s.created_at[:10] }}
-        {% if s.plan_type == 'anual' and s.expires_at %}· Vence {{ s.expires_at[:10] }}{% endif %}
-        {% if s.last_login %}<br>Último ingreso: {{ s.last_login[:16] }}{% endif %}
-      </div>
-      <form method="post" action="/admin/remove/{{ s.id }}" onsubmit="return confirm('¿Quitar el acceso de {{ s.name }}?');" style="margin-top:8px;">
-        <button class="remove-btn" type="submit">Quitar acceso</button>
+        <div>
+          <label>Título del video</label>
+          <input type="text" name="lesson_title" required placeholder="Ej: Video 1 — base y preparación">
+        </div>
+        <div>
+          <label>Link de YouTube</label>
+          <input type="text" name="lesson_video" required placeholder="Pega el link aquí tal cual">
+        </div>
+        <div>
+          <label>Foto de portada (opcional, pero se ve mucho mejor con una)</label>
+          <label class="file-drop" for="lesson_thumb_input">
+            <span class="file-drop-icon">📷</span>
+            <span class="file-drop-text" id="file-drop-text">Toca aquí para elegir una foto de tu galería</span>
+          </label>
+          <input type="file" name="lesson_thumb" id="lesson_thumb_input" accept="image/*"
+                 onchange="document.getElementById('file-drop-text').textContent = this.files[0] ? '✓ ' + this.files[0].name : 'Toca aquí para elegir una foto de tu galería';">
+        </div>
+        <button class="btn" type="submit">Subir esta clase</button>
       </form>
     </div>
-    {% else %}
-    <p style="color:var(--ink-soft);font-size:13.5px;">Todavía no hay suscriptoras.</p>
-    {% endfor %}
+
+    <div class="section-card">
+      <div class="section-head">
+        <span class="section-icon">📚</span>
+        <h2>Tus clases, agrupadas por técnica</h2>
+      </div>
+      <p class="helptext">Así es exactamente como las ve una alumna en su aula — organizadas por grupo, en el orden en que las subiste.</p>
+
+      {% for grupo in lesson_groups %}
+      <p class="group-label">{{ grupo.nombre }} <span class="group-count">{{ grupo.clases|length }} video{{ 's' if grupo.clases|length != 1 else '' }}</span></p>
+      <div class="card-list">
+        {% for l in grupo.clases %}
+        <div class="lesson-card">
+          {% if l.thumbnail %}
+            <img class="lesson-thumb" src="/static/uploads/{{ l.thumbnail }}" alt="{{ l.title }}">
+          {% else %}
+            <span class="lesson-thumb-placeholder">💅</span>
+          {% endif %}
+          <div style="flex:1;">
+            <div class="title">{{ l.title }}</div>
+            <div class="date">Subida el {{ l.added_at[:10] }}</div>
+          </div>
+          <form method="post" action="/admin/lessons/remove/{{ l.id }}" onsubmit="return confirm('¿Quitar esta clase?');">
+            <button class="remove-btn" type="submit">🗑️ Quitar</button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">Aún no subiste ninguna clase — usa el formulario de arriba para agregar tu primer video 🎬</div>
+      {% endfor %}
+    </div>
+
+    <div class="section-card">
+      <div class="section-head">
+        <span class="section-icon">🔑</span>
+        <h2>Dar un acceso manual</h2>
+      </div>
+      <p class="helptext">Úsalo solo para casos especiales — una cortesía, o un pago que te hicieron fuera de la web. Lo normal es que el acceso se cree solo cuando alguien se suscribe y paga.</p>
+      <form method="post" class="add-form">
+        <input type="hidden" name="form_type" value="manual">
+        <div>
+          <label>Nombre de la alumna</label>
+          <input type="text" name="name" required placeholder="Ej: María Torres">
+        </div>
+        <div>
+          <label>Su correo</label>
+          <input type="email" name="email" required placeholder="Ej: maria@correo.com">
+        </div>
+        <button class="btn" type="submit">Crear su acceso</button>
+      </form>
+    </div>
+
+    <div class="section-card">
+      <div class="section-head">
+        <span class="section-icon">👥</span>
+        <h2>Tus suscriptoras ({{ subscribers|length }})</h2>
+      </div>
+      <p class="helptext">La lista completa de quién tiene acceso ahora mismo, con su plan y su código.</p>
+      {% for s in subscribers %}
+      <div class="sub-card">
+        <div class="sub-card-top">
+          <span class="sub-card-name">{{ s.name }}</span>
+          {% if s.status == 'active' and (s.plan_type != 'anual' or not s.expires_at or s.expires_at > ahora) %}
+            <span class="badge badge-active">✓ Activa</span>
+          {% elif s.plan_type == 'anual' and s.expires_at and s.expires_at <= ahora %}
+            <span class="badge badge-off">Vencida</span>
+          {% else %}
+            <span class="badge badge-off">{{ s.status }}</span>
+          {% endif %}
+        </div>
+        <div class="sub-card-meta">
+          {{ s.email }} · <span class="badge badge-plan">{{ s.plan_type|capitalize }}</span><br>
+          Código: <span class="code-pill">{{ s.access_code }}</span> · Desde {{ s.created_at[:10] }}
+          {% if s.plan_type == 'anual' and s.expires_at %}· Vence {{ s.expires_at[:10] }}{% endif %}
+          {% if s.last_login %}<br>Último ingreso: {{ s.last_login[:16] }}{% endif %}
+        </div>
+        <form method="post" action="/admin/remove/{{ s.id }}" onsubmit="return confirm('¿Quitar el acceso de {{ s.name }}?');" style="margin-top:8px;">
+          <button class="remove-btn" type="submit">🗑️ Quitar acceso</button>
+        </form>
+      </div>
+      {% else %}
+      <div class="empty-state">Todavía no hay suscriptoras — en cuanto alguien se suscriba desde tu página de venta, va a aparecer aquí sola 🙌</div>
+      {% endfor %}
+    </div>
   </div>
 </body>
 </html>
